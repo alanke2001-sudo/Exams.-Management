@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>body{margin:0}</style>
+<title>策略管理期中考複習站</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: sticky header + tab rail; one view per section; cards only for interactive objects (decision nodes, options, flashcards) */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --sunk:#eceff3; --ink:#1c2230; --muted:#5b6474; --line:#d9dee6;
+  --px:#d9480f; --px-soft:#fff0e6; --htc:#0b7285; --htc-soft:#e3f4f6; --theory:#5f3dc4; --theory-soft:#efeafd;
+  --mark:#ffe98a; --mark-ink:#1c2230; --good:#2b8a3e; --good-soft:#e6f4ea; --bad:#c92a2a; --bad-soft:#fdecec; --warn:#b7791f; --warn-soft:#fdf3dc;
+  --display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12151b; --surface:#1a1f28; --sunk:#232a35; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2f3744;
+  --px:#ff8a4c; --px-soft:#3a2418; --htc:#4fc3d4; --htc-soft:#14323a; --theory:#a993ff; --theory-soft:#2a2347;
+  --mark:#6b5a12; --mark-ink:#fff6cc; --good:#69db7c; --good-soft:#18301e; --bad:#ff8787; --bad-soft:#3a1c1c; --warn:#f2c46b; --warn-soft:#3a2f16; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12151b; --surface:#1a1f28; --sunk:#232a35; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2f3744;
+  --px:#ff8a4c; --px-soft:#3a2418; --htc:#4fc3d4; --htc-soft:#14323a; --theory:#a993ff; --theory-soft:#2a2347;
+  --mark:#6b5a12; --mark-ink:#fff6cc; --good:#69db7c; --good-soft:#18301e; --bad:#ff8787; --bad-soft:#3a1c1c; --warn:#f2c46b; --warn-soft:#3a2f16; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.75}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+mark{background:var(--mark);color:var(--mark-ink);padding:0 .15em;border-radius:3px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.35;margin:0}
+h2{font-size:1.6rem}
+h3{font-size:1.2rem}
+p{margin:0}
+ul,ol{margin:0;padding-left:1.3em;display:grid;gap:.35em}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--theory);outline-offset:2px}
+
+/* header */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:12px;padding-block:10px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:900;font-size:1.15rem;letter-spacing:.02em}
+.brand small{font-family:var(--body);font-weight:500;color:var(--muted);font-size:.8rem;margin-left:8px;letter-spacing:0}
+.count{margin-left:auto;font-size:.85rem;background:var(--bad-soft);color:var(--bad);padding:3px 10px;border-radius:99px;font-weight:700;font-variant-numeric:tabular-nums}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+nav.tabs button{flex:none;border:1px solid transparent;background:none;padding:6px 12px;border-radius:99px;font-size:.92rem;color:var(--muted);white-space:nowrap}
+nav.tabs button .n{font-family:var(--mono);font-size:.75rem;margin-right:5px;opacity:.7}
+nav.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+nav.tabs button:hover{border-color:var(--line)}
+
+main{padding-block:28px 80px}
+section.view{display:grid;gap:28px}
+.lead{display:grid;gap:8px}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;color:var(--muted);font-weight:700}
+.lead p{color:var(--muted);max-width:68ch}
+.block{display:grid;gap:14px}
+.block>h3{display:flex;align-items:center;gap:10px}
+.block>h3::before{content:"";width:6px;height:1.1em;border-radius:3px;background:var(--c,var(--theory))}
+.px{--c:var(--px);--cs:var(--px-soft)} .htc{--c:var(--htc);--cs:var(--htc-soft)} .th{--c:var(--theory);--cs:var(--theory-soft)}
+.note{background:var(--warn-soft);border-left:4px solid var(--warn);padding:10px 14px;border-radius:6px;font-size:.93rem}
+.soft{background:var(--cs,var(--sunk));padding:14px 16px;border-radius:var(--r)}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+
+/* segmented control */
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--surface);padding:5px 14px;border-radius:99px;font-size:.92rem}
+.seg button[aria-pressed="true"]{background:var(--c,var(--ink));border-color:var(--c,var(--ink));color:var(--bg);font-weight:700}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.92rem;min-width:560px}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{background:var(--sunk);font-weight:700;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+td:first-child{font-weight:500}
+
+/* case cards */
+.dpgrid{display:grid;gap:12px}
+.dp{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.dp>summary{list-style:none;cursor:pointer;padding:12px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+.dp>summary::-webkit-details-marker{display:none}
+.dp .num{font-family:var(--display);font-weight:900;color:var(--c);font-size:1.4rem;min-width:1.6em;text-align:center}
+.dp .ttl{font-weight:700;min-width:0}
+.dp .ttl small{display:block;font-weight:400;color:var(--muted);font-size:.86rem}
+.dp .chev{color:var(--muted);transition:transform .2s}
+.dp[open] .chev{transform:rotate(90deg)}
+.dp .body{padding:0 16px 16px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.dp .cell{min-width:0}
+.dp .cell b{display:block;font-size:.78rem;letter-spacing:.08em;color:var(--c);margin-bottom:2px}
+.linkbtn{background:none;border:none;color:var(--c,var(--theory));font-weight:700;padding:0;text-decoration:underline;text-underline-offset:3px}
+
+/* glossary */
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.search{flex:1 1 220px;min-width:0;padding:8px 14px;border:1px solid var(--line);border-radius:99px;background:var(--surface);color:var(--ink);font:inherit}
+.toggle{display:inline-flex;gap:6px;align-items:center;font-size:.92rem;cursor:pointer}
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.term{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:6px;align-content:start;text-align:left;min-width:0}
+.term .hd{display:flex;gap:8px;align-items:baseline;justify-content:space-between}
+.term .nm{font-family:var(--display);font-weight:700;font-size:1.08rem}
+.tag{font-family:var(--mono);font-size:.72rem;padding:1px 7px;border-radius:99px;background:var(--sunk);color:var(--muted);flex:none}
+.term .ex{font-size:.86rem;color:var(--muted)}
+.term .ex::before{content:"例｜";color:var(--theory);font-weight:700}
+.term.quiz .df,.term.quiz .ex{filter:blur(6px);user-select:none}
+.term.quiz.show .df,.term.quiz.show .ex{filter:none;user-select:auto}
+.term .known{justify-self:start;font-size:.8rem;border:1px solid var(--line);background:none;border-radius:99px;padding:1px 10px;color:var(--muted)}
+.term.isknown{border-color:var(--good);background:var(--good-soft)}
+.term.isknown .known{color:var(--good);border-color:var(--good)}
+
+/* five forces */
+.ff{display:grid;grid-template-columns:1fr 1.15fr 1fr;grid-template-areas:". t ." "l c r" ". b ." "x x x";gap:10px;align-items:stretch}
+.force{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:12px;text-align:left;display:grid;gap:6px;align-content:start;min-width:0}
+.force[aria-pressed="true"]{border-color:var(--c);box-shadow:0 0 0 3px var(--cs)}
+.force .fn{font-weight:700;font-size:.95rem}
+.force.c{grid-area:c;background:var(--cs)} .force.t{grid-area:t} .force.l{grid-area:l} .force.r{grid-area:r} .force.b{grid-area:b} .force.x{grid-area:x;border-style:dashed}
+.meter{display:flex;gap:3px;align-items:center}
+.meter i{width:16px;height:7px;border-radius:2px;background:var(--sunk)}
+.meter i.on{background:var(--c)}
+.meter span{font-size:.8rem;font-weight:700;color:var(--c);margin-left:6px}
+.fdetail{border-left:4px solid var(--c);padding:12px 16px;background:var(--surface);border-radius:0 var(--r) var(--r) 0}
+@media (max-width:560px){.ff{grid-template-columns:1fr;grid-template-areas:"c" "t" "l" "r" "b" "x"}}
+
+/* swot */
+.swot{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.q4{border-radius:var(--r);padding:12px 16px;min-width:0}
+.q4 h4{margin:0 0 6px;font-size:1rem;display:flex;gap:8px;align-items:baseline}
+.q4 h4 .L{font-family:var(--display);font-size:1.5rem;font-weight:900}
+.q4.S{background:var(--good-soft)} .q4.S .L{color:var(--good)}
+.q4.W{background:var(--bad-soft)} .q4.W .L{color:var(--bad)}
+.q4.O{background:var(--htc-soft)} .q4.O .L{color:var(--htc)}
+.q4.T{background:var(--warn-soft)} .q4.T .L{color:var(--warn)}
+.tows{display:grid;grid-template-columns:auto 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;font-size:.92rem}
+.tows>div{background:var(--surface);padding:10px 12px;min-width:0}
+.tows .h{background:var(--sunk);font-weight:700}
+.tows.tows2{grid-template-columns:1fr 1fr}
+.tows b{font-family:var(--mono);color:var(--theory)}
+@media (max-width:560px){.swot{grid-template-columns:1fr}.tows{grid-template-columns:1fr}.tows .h{display:none}}
+
+/* decision tree */
+.treebar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.tree{display:grid;gap:0;position:relative}
+.node{display:grid;grid-template-columns:56px 1fr;gap:0 14px;position:relative}
+.node .spine{position:relative;display:flex;justify-content:center}
+.node .spine::before{content:"";position:absolute;top:0;bottom:0;width:3px;background:var(--cs)}
+.node:first-child .spine::before{top:22px}
+.node:last-child .spine::before{bottom:auto;height:22px}
+.node .dot{position:relative;z-index:1;width:46px;height:46px;border-radius:50%;background:var(--c);color:var(--bg);display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:1.25rem;margin-top:0}
+.node .content{padding-bottom:30px;display:grid;gap:12px;min-width:0}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:6px}
+.qcard .yr{font-family:var(--mono);font-size:.8rem;color:var(--c)}
+.qcard h4{margin:0;font-family:var(--display);font-size:1.15rem}
+.qcard .sit{font-size:.92rem;color:var(--muted)}
+.branches{display:grid;align-items:start;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;position:relative;padding-top:14px}
+.branches::before{content:"";position:absolute;top:0;left:18px;right:18px;height:14px;border:2px solid var(--line);border-bottom:none;border-radius:8px 8px 0 0}
+.opt{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:10px 12px;text-align:left;display:grid;gap:6px;align-content:start;min-width:0;position:relative}
+.opt .oh{display:flex;gap:8px;align-items:flex-start}
+.opt .lt{flex:none;width:26px;height:26px;border-radius:7px;background:var(--sunk);display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:.9rem}
+.opt .on{font-weight:700;font-size:.95rem;line-height:1.45}
+.opt.chosen{border-color:var(--c);background:var(--cs)}
+.opt.chosen .lt{background:var(--c);color:var(--bg)}
+.opt .badge{display:none;font-size:.72rem;font-weight:700;color:var(--c);letter-spacing:.06em}
+.opt .pc{display:none;gap:6px;font-size:.88rem}
+.opt.open .pc{display:grid}
+.pc .pro{color:var(--good)} .pc .con{color:var(--bad)}
+.pc .pro b,.pc .con b{font-weight:700}
+.pc span{color:var(--ink)}
+.opt .hint{font-size:.78rem;color:var(--muted)}
+.opt.open .hint{display:none}
+.opt.picked{outline:3px dashed var(--theory);outline-offset:2px}
+.tree.quiz .node:not(.rv) .opt.chosen{border-color:var(--line);background:var(--surface)}
+.tree.quiz .node:not(.rv) .opt.chosen .lt{background:var(--sunk);color:var(--ink)}
+.node.rv .opt.chosen .badge{display:block}
+.why{border-radius:var(--r);padding:12px 16px;background:var(--cs);display:grid;gap:6px;font-size:.93rem}
+.why b.k{color:var(--c)}
+.reveal{justify-self:start;border:1.5px solid var(--c);background:var(--surface);color:var(--c);font-weight:700;border-radius:99px;padding:5px 16px}
+.verdict{font-weight:700}
+@media (max-width:560px){.node{grid-template-columns:36px 1fr;gap:0 10px}.node .dot{width:34px;height:34px;font-size:1rem}.node:first-child .spine::before{top:17px}.node:last-child .spine::before{height:17px}}
+.verdict.ok{color:var(--good)} .verdict.no{color:var(--bad)}
+
+/* tips */
+.chain{display:flex;flex-wrap:wrap;gap:8px;align-items:center;counter-reset:s}
+.chain span{background:var(--theory-soft);color:var(--theory);font-weight:700;padding:6px 12px;border-radius:8px;font-size:.92rem}
+.chain i{color:var(--muted);font-style:normal}
+.qtypes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.qtype{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;font-size:.93rem;min-width:0}
+.cards{display:grid;gap:10px}
+.fc{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--lvl);border-radius:var(--r);overflow:hidden}
+.fc.hot{--lvl:var(--bad)} .fc.warm{--lvl:var(--warn)} .fc.cool{--lvl:var(--htc)}
+.fc>summary{list-style:none;cursor:pointer;padding:12px 16px;display:grid;gap:4px}
+.fc>summary::-webkit-details-marker{display:none}
+.fc .st{color:var(--lvl);font-size:.85rem;letter-spacing:.1em;font-weight:700}
+.fc .st em{font-style:normal;color:var(--muted);letter-spacing:0;font-weight:400;margin-left:8px}
+.fc .qt{font-weight:700}
+.fc .tap{font-size:.8rem;color:var(--muted)}
+.fc[open] .tap{display:none}
+.fc .ans{padding:0 16px 14px;font-size:.93rem}
+.fc .ans .lb{display:inline-block;font-size:.76rem;font-weight:700;background:var(--theory-soft);color:var(--theory);padding:1px 8px;border-radius:5px;margin-bottom:6px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.two>*{min-width:0}
+footer{color:var(--muted);font-size:.82rem;padding-top:20px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="bar">
+      <div class="brand">策略管理期中考複習站<small>Lec1–4・全聯・HTC</small></div>
+      <div class="count" id="count"></div>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </div>
+</header>
+<main class="wrap" id="main"></main>
+
+<script>
+const SRC = [{"kind": "p", "h1": null, "h2": null, "h3": null, "text": "考試日期：**2026/10/27（第 8 週）**｜範圍：Lec1–Lec4，**到 BCG 為止**｜個案：**只考 HTC、全聯**（Netflix 不考）｜**3 小時、約 6–7 題**"}, {"kind": "note", "h1": null, "h2": null, "h3": null, "text": "說明：本版已依老師課堂預告考試的兩段錄音（10/20 轉錄）調整重點與題目優先順序。錄音為語音辨識結果，少數字句可能有誤。"}, {"kind": "table", "h1": "零、老師預告的考試重點（錄音整理）", "h2": "1. 考試形式", "h3": null, "header": ["項目", "老師怎麼說"], "rows": [["時間與題數", "**3 小時**（考到下課），**約 6–7 題**，滿分有時是 **105 分**"], ["小抄", "可帶 **A4 一張、雙面**（碩士班只給一面）；鉛筆也可以，別弄太髒"], ["個案範圍", "**只考全聯和 HTC**；**Netflix 不考**（老師手上只有 Netflix 的檔案，只拿它示範題型）"], ["理論範圍", "Lec1–4，**到 BCG 矩陣為止**"], ["考試規則", "不能用手機、不能討論，助教會巡"]]}, {"kind": "ul", "h1": "零、老師預告的考試重點（錄音整理）", "h2": "2. 題型（老師親口舉的例子）", "h3": null, "items": ["**題型一：決策點 ABC 選項題（最核心）**。老師會說「某公司在某時期考慮某件事，有 A、B、C 三個選項」，請你**分別列出三個選項的優缺點**，再說明**為什麼最後選了那一個**。**實際選擇後的關鍵資訊會被拿掉**，要你自己推理。→ 本份第四部分 D 整理了全聯、HTC 每個決策點每個選項的優缺點。", "**題型二：先說明是什麼，再闡述你的看法**。例：「全聯做生鮮，以 Porter 的低成本／差異化來看屬於哪一種？」答案是**差異化**；接著問「**為什麼要在這個時間點**做生鮮？」→ 老師自己的答案見下方第 3 點。", "**題型三：解釋概念＋自己舉例**。例：「什麼是**市場鴻溝**？為什麼會發生？舉案例說明。」**不可以再用上課講過的例子**（Segway、Google Glass、3D 電視），要自己想。寫出例子，再寫為什麼舉它。", "**題型四：專有名詞**，例如**早期多數者**，有上課就會知道。", "**題型五：五力有標準答案**（不能自己變七力八力，要用波特的定義）。例：「**HTC 在五力分析裡面臨什麼狀況？**」", "**題型六：用大家都熟悉的公司出題**，老師舉例「**統一超商**」（不會考美光這種每個人都不熟的產業）。老師說這「只是範例，不是承諾」，但很值得準備。", "**擴散加速因素**（讓消費者盡快進入多數）：替代品相對優勢、複雜性、相容性、可試用性、可觀察性，老師在錄音中逐一舉例，要會。"]}, {"kind": "ul", "h1": "零、老師預告的考試重點（錄音整理）", "h2": "3. 老師示範的標準答案：全聯為什麼在這個時間點做生鮮", "h3": null, "items": ["**已經擴張到一定規模、有資本**：市場還不穩時做生鮮，投入成本的風險太高；現在市場與規模都有了。", "**有併購累積的技術**：過去併購（例如善美的）帶來生鮮的技術優勢，加上規模，可以嘗試。", "**拉開和對手的差距**：生鮮成本高、風險大，**跨過門檻就成為進入障礙（壁壘）**；跨不過，投入就全部打水漂，所以這一關一定要成功。", "**不做的風險**：不做別人也會做，**日本已有先例**；**台灣人的消費習慣改變**，很多人去不了傳統市場、連黃昏市場都碰不到，只能去超市。"]}, {"kind": "ul", "h1": "零、老師預告的考試重點（錄音整理）", "h2": "4. 作答要求（老師特別提醒）", "h3": null, "items": ["**條列、講重點**：不要一個優點寫 250 字、一間公司寫滿一整面。", "**要有一套論述**：理由 → 所以怎麼樣 → 然後帶來什麼結果。", "**要寫到「效益」那一句**：例如 ERRC 不能只說它減少了什麼，要說**降低了什麼、帶來什麼效益**。老師的例子：PChome 24 小時屬於「提升」，因為 24 小時內收到貨，**降低了消費者的等待時間**。", "看法要有邊界：在題目給的 ABC 與課程架構內發揮，不要無限延伸。", "答題骨架：**一句結論 → 點名課程架構 → 個案證據（年份、數字）→ 推理鏈與效益 → 代價**。"]}, {"kind": "ul", "h1": "零、老師預告的考試重點（錄音整理）", "h2": "5. 課程本身的金句（答題時用上會加分）", "h3": null, "items": ["**策略要回答「我放棄了什麼」**、**資源配置最能看出真正的策略（預算表比策略簡報準）**、**判斷要有證據，不要只講感覺**、**數字要標年份與來源**。", "個案課前思考題（HTC 6 題、全聯 6 題）仍是很好的練習題，第五部分逐題附答題大綱。"]}, {"kind": "ul", "h1": "一、Lec2 策略管理概述（NVIDIA 個案）", "h2": "1. 策略的定義與區別", "h3": null, "items": ["**策略**：經理人為了提升公司績效所採取的**一組相關行動**。重點在「一組」與「相關」；單一決定不是策略，彼此矛盾的一堆決定也不是。", "層次：策略（長期）→ 戰略（中期）→ 作業（短期）。策略影響範圍廣，制定成本高、改動成本更高。", "**策略 vs 營運效能**：營運效能是把同一件事做得比別人好（良率、交期、成本），**會被模仿與追平**，最後大家一起降價；策略是選擇做不一樣的事或用不一樣的方式，而且**刻意不做某些事**。例：NVIDIA 放棄板卡、3dfx 上下游都要，最後失去通路。", "**策略領導／制定／執行**：制定出問題 → 方向錯；執行出問題 → 方向對但做不出來。實務上**執行失敗遠多於方向失敗**。", "策略管理四項工作：**定方向**（說清楚不走哪些）、**配資源**（預算表比簡報準）、**抓變化**（定期檢查假設）、**對齊與檢查**。"]}, {"kind": "ul", "h1": "一、Lec2 策略管理概述（NVIDIA 個案）", "h2": "2. 策略有效性的衡量", "h3": null, "items": ["最後只看兩件事：**獲利能力（ROIC）**與**利潤成長**，兩者共同決定股東價值。", "**ROIC = 淨利 / 投入資本 = 銷售報酬率（淨利/營收）× 資本週轉率（營收/投入資本）**。差異化主要動第一段（客戶願付溢價）；低成本兩段都動。例：CUDA 動第一段，把製造交給台積電讓第二段好看。", "利潤成長四來源：成長市場賣既有產品、搶對手市占、對既有客戶賣更多、往海外或新事業擴張。", "**V－P－C**：客戶得到 V－P（消費者剩餘），公司得到 P－C，總價值創造 V－C。**差異化 = 把 V 往上推；低成本 = 把 C 往下壓**。只降價不動 V 或 C，等於把價值讓給客戶。"]}, {"kind": "ul", "h1": "一、Lec2 策略管理概述（NVIDIA 個案）", "h2": "3. 競爭優勢的根源", "h3": null, "items": ["資源與能耐 → **獨特能力** → 四個基石：**效率、品質、創新、顧客回應** → 兩個出口：**差異化或低成本** → 卓越獲利。", "**競爭優勢**：獲利與利潤成長高於同業平均；**持續競爭優勢**：連續維持好幾年。差別在能否擋住模仿：複製要很久、複製要放棄現有生意、複製成本高於收益、關鍵資源買不到。", "低成本與差異化**可同時成立的條件**：技術世代交替（RIVA 128 單晶片）、規模差距夠大、差異化來源不需額外變動成本（軟體、生態系、品牌）。", "**商業模式**：一組策略串成能自己運轉的系統，各部分要互相加強（CUDA 吸引開發者 → 應用變多 → 客戶被綁 → 出貨變大 → 再投 CUDA）。各環節彼此獨立只能算待辦清單。"]}, {"kind": "table", "h1": "一、Lec2 策略管理概述（NVIDIA 個案）", "h2": "4. 策略三層級", "h3": null, "header": ["層級", "誰", "決定什麼", "失敗徵兆"], "rows": [["公司層級", "執行長、總部", "待在哪些事業、資源怎麼分、併購或退出（例：AMD 併 ATI 兩邊打仗）", "做得很努力、指標達成，但賺不到錢；換三任主管都一樣"], ["事業層級", "事業單位主管", "在這個市場怎麼贏：低成本或差異化、鎖定與放棄哪些客戶。核心動詞是「**翻譯**」", "同市場有人做得起來我們做不起來；客戶說不錯但不買"], ["功能層級", "研發、生產、行銷、財務主管", "把事業層級的選擇做出來，在效率、品質、創新、顧客回應上卓越", "延期、品質不穩、成本失控，可指到特定環節"]]}, {"kind": "ol", "h1": "一、Lec2 策略管理概述（NVIDIA 個案）", "h2": "5. 策略規劃程序與 SWOT", "h3": null, "items": ["選擇使命與主要目標", "外部分析 → 機會與威脅", "內部分析 → 優勢與劣勢", "選策略（利用機會、對抗威脅、發揮優勢、修正劣勢）形成商業模式", "執行並回饋"]}, {"kind": "ul", "h1": "一、Lec2 策略管理概述（NVIDIA 個案）", "h2": "5. 策略規劃程序與 SWOT", "h3": null, "items": ["SWOT 最常見的做壞方式：**四格各填五條，然後沒有下一步**。要做成 SO／ST／WO／WT 對應策略，且內外部用**同一個時間尺度**。", "**意圖策略 vs 突現策略**（Mintzberg）：規劃的只有一部分會實現，實際策略還包含沒規劃的部分。", "**情境規劃**：找兩個影響最大又最不確定的變數交叉成四個情境，每個寫出應對動作與觸發指標。"]}, {"kind": "table", "h1": "一、Lec2 策略管理概述（NVIDIA 個案）", "h2": "6. 決策偏誤與改善技術（申論常考）", "h3": null, "header": ["偏誤", "意義", "徵兆／例子"], "rows": [["確認偏誤", "先有結論再挑證據", "會議只請支持方報告"], ["加碼承諾", "計畫已顯示要失敗仍持續投入；背後是沉沒成本、面子與職涯", "NV1 路線；HTC 2013 全押新 One？"], ["類比推論", "用簡單類比理解複雜問題", "「日本當年就是這樣走過來的」"], ["代表性偏誤", "小樣本或生動案例推通則", "一個成功案例講三年變定律"], ["控制的幻覺", "高估自己的控制能力", "風險欄全是可管理的風險"], ["現成偏誤", "用容不容易想像估計機率", "大客訴後加三道品保，單一供應來源十年沒人管"]]}, {"kind": "ul", "h1": "一、Lec2 策略管理概述（NVIDIA 個案）", "h2": "6. 決策偏誤與改善技術（申論常考）", "h3": null, "items": ["改善技術：**魔鬼代言人法**（指定人唱反調）、**辯證探詢法**（正反兩計畫互斥，逼面對取捨）、**外視法**（用外部基準：同類公司平均要多久、成功率多少）。", "**遠見 vs 固執（加碼承諾）的事前判準**：①講不講得出可被推翻的條件；②投入方式是否保留選擇權（持續小額、可停、沿路有中間產出）；③有沒有主動找反面證據。", "策略領導：能講清楚商業模式、用行動展現承諾、消息靈通、樂於授權、情緒智商（「我們離倒閉還有三十天」讓壞消息可以討論）。"]}, {"kind": "ul", "h1": "一、Lec2 策略管理概述（NVIDIA 個案）", "h2": "7. NVIDIA 三個轉折（輔助例）", "h3": null, "items": ["**轉折一 1995–97 NV1 vs Direct3D**：選 C 收掉整條線改做 Direct3D 相容 → RIVA 128 四個月賣 100 萬顆。概念：**沉沒成本、標準由第三方決定、現金見底時把賭注收成一個**。", "**轉折二 1998–2000 vs 3dfx**：3dfx 以 1.41 億美元併板卡廠 STB → **通路衝突**、Glide 封閉、多晶片高成本 → 2000 年破產。NVIDIA 只賣晶片、全押標準、半年一代節奏。概念：**互補品、垂直整合的成立條件**（下游利潤高且穩、下游家數少、需緊密協調、下游有機會主義）。3dfx 錯在時機與做法：順序錯、範圍錯、成本沒算清。", "**轉折三 2006–16 CUDA**：六年沒重要客戶，2012 AlexNet（15.3% vs 26.2%）翻轉。概念：**平台、轉換成本、不可逆承諾**；續投證據看使用者斜率、應用分散度、對手動作。"]}, {"kind": "ul", "h1": "二、Lec3 內外部分析（AMD、HTC 個案）", "h2": "1. 價值鏈", "h3": null, "items": ["**主要活動**：研發、生產、行銷與銷售、顧客服務。**支援活動**：物料管理（物流）、人力資源、資訊系統、公司基礎設施（組織結構、控制、誘因、文化）。", "獲利三決定因素：**V（顧客評價）、P（價格）、C（成本）**。價格通常低於 V：消費者剩餘、保留價格不同、競爭對手壓價。提升效用後可選擇提高售價或降價擴量。"]}, {"kind": "ul", "h1": "二、Lec3 內外部分析（AMD、HTC 個案）", "h2": "2. 內部分析：資源、獨特能力、VRIO", "h3": null, "items": ["**基本生產要素**：勞力、土地、管理、廠房設備。**高階生產要素**：**流程知識、組織架構、智慧財產**，這三種最可能帶來持續競爭優勢（路徑相依、受法律保護）。", "四基石例：品質＝台積電、效率＝SHEIN（法規變動後裂縫）、顧客回應＝Costco（會費＜2% 營收卻超過一半營業利益）、創新＝Spotify。", "**VRIO**：V 有價值？R 稀有？I 難模仿？O 組織能發揮？反例：**Intel 晶圓廠 V、R、I 皆是，O 失分**。同一資源兩種決定：AMD 2009 分拆格羅方德、Intel 繼續 IDM。結論：**資源必須配上能駕馭它的組織**。", "**模仿障礙五測試**：①實質獨特性 ②耐久性（日本 DRAM、HBM 市占一年變動）③**專有性**（價值被誰拿走：NVIDIA 毛利 75% vs 廣達 5%）④**可替代性**（Quibi 被免費 TikTok/YouTube 替代、底片→數位→手機）⑤競爭優勢測試（要和對手比，不是自我感覺；黑莓機誤判實體鍵盤）。", "**整合本身就是競爭能力**（Apple Silicon）：難模仿是因為它不是一項資源，是資源之間的介面。"]}, {"kind": "table", "h1": "二、Lec3 內外部分析（AMD、HTC 個案）", "h2": "3. 外部分析：五力（課本 5+1）", "h3": null, "header": ["作用力", "變強的條件（記關鍵字）"], "rows": [["新進入者威脅", "進入障礙低：規模經濟、品牌忠誠、絕對成本優勢、轉換成本、資金需求、通路取得、政府管制。**壓低獲利的是「威脅感」**，不必真的有人進來"], ["買方議價力", "賣方多、量大、占供應商比重高、轉換成本低、可向上整合、產品標準化、買方獲利低"], ["供應商議價力", "少替代品且重要、買方不是重要客戶、產品獨特轉換成本高、可向下整合、買方無法向上整合"], ["替代品威脅", "性價比更高、轉換成本低、偏好改變、技術進步。容易被忽略（領帶 vs 電動工具）"], ["既有競爭者對立", "家數多或勢均力敵、成長慢、**退出障礙高**、固定成本高邊際成本低、產品同質、無法保存 → 價格戰"], ["互補者（+1）", "互補者強 → 需求與獲利提升。波特認為不算第六力，要看它對五力的影響（可提高轉換成本，也可能消除差異）"]]}, {"kind": "ul", "h1": "二、Lec3 內外部分析（AMD、HTC 個案）", "h2": "3. 外部分析：五力（課本 5+1）", "h3": null, "items": ["**總體環境**（全球化、科技、人口、社會、政治法律）與 **PESTEL** 不直接決定獲利，是**透過改變五力**發生作用。", "**策略群組**：同群組商業模式相似、互為直接替代品，**最立即的威脅來自同群組對手**。", "**零和 vs 正數和競爭**：大家搶同一需求是零和；服務不同區隔可擴大整個產業。", "**界定市場的方式決定五力結論**（AI 產業：付費口徑 vs token 口徑）。", "產業分析三步：界定產業 → 找參與者分群 → 評估每一力並檢驗與實際獲利是否一致。常見五錯：界定太寬或太窄、五力一視同仁、因果倒置、靜態分析、把週期性當結構性。"]}, {"kind": "table", "h1": "二、Lec3 內外部分析（AMD、HTC 個案）", "h2": "4. 產業生命週期與間斷均衡", "h3": null, "header": ["階段", "特徵"], "rows": [["胚胎期", "成長慢（買方不熟、通路不全、無規模經濟），進入障礙在技術 know-how"], ["成長期", "首購需求擴張、價格下降，潛在進入者威脅高但**競爭程度低**（不必搶對手）"], ["震盪期", "需求接近飽和、競爭激烈、價格戰、產能過剩、體質差的退出"], ["成熟期", "替換需求為主、進入障礙高、趨於寡占、避免價格戰"], ["衰退期", "科技替代、社會改變、人口、國際競爭 → 產能過剩、競爭增加"]]}, {"kind": "ul", "h1": "二、Lec3 內外部分析（AMD、HTC 個案）", "h2": "4. 產業生命週期與間斷均衡", "h3": null, "items": ["**間斷均衡**：長期穩定被劇烈創新打破（iPhone 2007 打破功能機均衡），之後到新均衡，但可能變得更分散、更競爭。"]}, {"kind": "ul", "h1": "二、Lec3 內外部分析（AMD、HTC 個案）", "h2": "5. AMD 五個決策點（輔助例）", "h3": null, "items": ["2006 以 54 億美元併 ATI → 2009 以 6,500 萬美元賣行動繪圖給高通（後來的 Adreno）→ 2009 分拆晶圓廠成立格羅方德（WSA 排他採購，花 12 年、超過 10 億美元一次性費用才解開）→ 2014 蘇姿丰押 Zen、轉台積電 → 2020 起以股權綁 AI 客戶。", "蘇姿丰三主軸：確立方向穩住領導層、專注設計剝離非核心、用遊戲主機半客製化撐現金流（「邊輸血，邊研發」）。**核心是取捨：放棄製程競賽，集中在設計**。", "**AMD vs HTC 對照**（Lec3 投影片原句）：差別不在努力程度，在三件事：**有沒有做取捨、關鍵資源掌握在誰手上、決策提前了幾年**。"]}, {"kind": "ul", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "1. 一般性事業層級策略", "h3": null, "items": ["**低成本**：能削價、搶市占、仍維持獲利；可吸收供應商漲價、應付要折扣的買方。", "**差異化**：提供對手難以匹配的屬性（可靠、功能、設計、品牌、服務），可收較高價格、抵抗強勢買方與替代品。", "**集中（聚焦）**：服務有限區隔，可分為集中低成本或集中差異化。", "**卡在中間（stuck in the middle）**：波特認為須在低成本與差異化間明確擇一，否則策略不明確。", "**效率前緣**：差異化與低成本的各種可行位置，因報酬遞減呈凸曲線；要到達前緣需正確的功能層級策略與組織配合。", "**價值創新**：透過創新把效率前緣往外推，用更低成本建立更好差異化（IKEA、Netflix、全聯）。"]}, {"kind": "table", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "2. 藍海策略 ERRC", "h3": null, "header": ["動作", "問題", "課堂例＋要寫出的效益"], "rows": [["消除 Eliminate", "產業視為理所當然、可以拿掉的因素（降成本）", "Dell 直銷：消除經銷商 → 省下通路成本、價格更低、直接掌握顧客需求"], ["減少 Reduce", "降到產業平均以下（降成本）", "豐田精實：減少庫存與浪費 → 降低生產成本、品質更穩"], ["提升 Raise", "提高到產業標準以上（增價值）", "PChome 24h：提升配送速度 → 24 小時內收到貨，**降低消費者的等待時間**"], ["創造 Create", "對手沒提供、我們可創造（增價值）", "Netflix 串流：創造隨選線上觀看 → 不用出門租片、隨時看"]]}, {"kind": "note", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "2. 藍海策略 ERRC", "h3": null, "text": "老師提醒：ERRC 不能只寫「它減少了什麼」，一定要寫到「降低了什麼成本、帶來什麼效益」。"}, {"kind": "ul", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "3. 分散型產業、連鎖與加盟", "h3": null, "items": ["**分散型產業**：由眾多中小公司組成。原因：缺乏規模經濟、品牌忠誠度有地域性。全聯初期的超市業就是（頂好、福利中心、萬家福、楊聯社、松青、北海道、統冠…）。", "整合手段：**水平合併**（收購對手）、**連鎖**（以資訊科技把據點連起來，像大公司般運作，建立全國品牌、取得成本領導）。", "**連鎖 vs 特許加盟**：連鎖強調品牌一致、集中決策、規模經濟，但受資源限制；加盟擴張快、風險低，但控制權下降、加盟主可能不守規則。"]}, {"kind": "ul", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "4. 市場區隔與市場發展", "h3": null, "items": ["區隔三取向：**標準化**（忽略區隔，低成本，紅海）、**市場區隔**（多區隔多產品，成本上升）、**集中化**（少數區隔，藍海）。", "擴散曲線（S 型）：**創新者**（買新技術、做實驗）→ **早期採用者**（了解技術未來的重要性）→（**鴻溝**）→ **早期多數者**（權衡成本效益）→ **晚期多數者**（效用明顯、大多數人接受才買）→ **落後者**（無法領會新技術的好處）。多數者在中間。", "不同區隔的策略：創新者與早期採用者技術能力高、能忍受不完美，走特定通路、少量生產（例：嘖嘖集資者）；早期多數者重視**容易使用與可靠**，需要**大眾通路與大眾媒體廣告**、大規模生產可靠低價的產品。"]}, {"kind": "ul", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "4. 市場區隔與市場發展", "h3": "市場鴻溝（老師點名會考：定義＋原因＋自己的例子）", "items": ["**定義**：產品從胚胎期市場（創新者、早期採用者）過渡到大眾市場（早期多數者）之間的斷層。很多產品在這裡賣不動而退出。", "**為什麼會發生**：兩群顧客的需求不同。早期採用者為了新技術願意忍受高價與不完美；早期多數者要的是**好用、可靠、價格合理、別人都在用**。公司若沿用原本的商業模式，就跨不過去。胚胎期與大眾市場的競爭動態和消費者行為截然不同。", "**跨越時的挑戰**：競爭變激烈、擴大規模的成本壓力、客服與供應鏈變複雜、需要大量市場教育、品質控制、風險管理。", "**上課用過的例子（考試不能再用）**：Google Glass、Segway、3D 電視。", "**可以自己舉的例子**（附理由）：①**Apple Vision Pro**：售價約 3,500 美元、配戴笨重、可用內容少，科技愛好者買單，一般消費者看不到非買不可的理由 → 缺相對優勢、複雜度高。②**VR 頭戴裝置（包括 HTC VIVE）**：遊戲玩家與企業買，但大眾覺得暈眩、設定麻煩、內容少，至今仍未成為家家戶戶的產品；也能連到 HTC 個案。③**燃料電池車／氫能車**：加氫站太少（缺互補品），只有少數環保先行者購買。寫法：例子 → 卡在哪一群 → 用擴散因素說明為什麼跨不過。"]}, {"kind": "table", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "4. 市場區隔與市場發展", "h3": "加速擴散的因素（老師錄音逐一舉例）", "header": ["因素", "意思", "老師的例子"], "rows": [["替代品的相對優勢", "新產品滿足需求的程度優於現有替代品", "串流取代實體出租；也呼應五力的「替代品」"], ["複雜性", "愈難掌握擴散愈慢，愈簡單愈快", "—"], ["相容性", "符合使用者既有的知覺、需求與價值", "Apple 的介面大家都覺得好用"], ["可試用性", "能先體驗、試用", "化妝品試用包；訂閱服務第一個月免費"], ["可觀察性", "使用結果看得見、別人也認同 → 口碑", "意見領袖、社群與網紅行銷"]]}, {"kind": "table", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "5. BCG 矩陣", "h3": null, "header": ["象限", "市場成長", "相對市占", "策略"], "rows": [["明星 Star", "高", "高", "繼續投資保持領先（Build/Hold）"], ["金牛 Cash cow", "低", "高", "最大化利潤，現金拿去養其他事業（Harvest）"], ["問號 Question mark", "高", "低", "挑少數加碼成明星，其餘退出"], ["老狗 Dog", "低", "低", "縮減或退出（Divest）"]]}, {"kind": "ul", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "5. BCG 矩陣", "h3": null, "items": ["**相對市占 = 本公司市占 ÷ 最大對手市占**（自己第一就除以第二名），分界 1.0。", "限制：只有兩個維度、靜態、資料要求高。HBM 例：SK 海力士＝明星、美光＝問號、三星爭議（嚴格定義是問號，依實力是明星）。", "動態：成功序列（金牛養問號 → 明星 → 新金牛）；失敗序列（明星投資不足 → 問號 → 老狗）。**HTC 就是明星沒守住的失敗序列**，且手上沒有金牛可救。"]}, {"kind": "ul", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "6. 成熟產業的進入阻絕與管理競爭對手", "h3": null, "items": ["**進入阻絕**：**產品增殖**（填滿利基）、**限制定價**（低於短期利潤極大化價格、高於進入者成本）、**技術升級**、**策略承諾**（用投資發出長期承諾訊號）。", "**管理競爭對手**：**價格訊號**、**價格領導**、**產能控制**（先占或間接協調，產能投資時機勾結違反反托拉斯法）、**非價格競爭**（Ansoff 四策略）。"]}, {"kind": "table", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "7. Ansoff 矩陣", "h3": null, "header": ["", "現有產品", "新產品"], "rows": [["現有市場", "**市場滲透**：提高現有產品市占（廣告、會員、再購）", "**產品開發**：在現有市場推新產品或延伸"], ["新市場", "**市場開發**：現有產品找新客層或新區域", "**多角化**：新產品進新市場（多屬公司層級）"]]}, {"kind": "ul", "h1": "三、Lec4 事業層級策略（全聯個案）", "h2": "8. 競爭強度與衰退產業策略", "h3": null, "items": ["競爭強度決定因素：**衰退的速度、產品的性質（同質或差異）、退出障礙、固定成本**。", "市場衰退時：價格戰、弱者退出、集中度上升（併購）、創新減少、品牌忠誠下降、結盟增加。", "衰退產業四策略：**領導**（成為主導者）、**利基**（衰退較慢的小區隔）、**收割**（資產減到最少榨取現金，例 Wii 後期）、**撤資**（出售資產退出，例 GE）。"]}, {"kind": "p", "h1": "四、個案重點", "h2": "A. HTC 的五個決策點（2006–2013，Lec3 外部分析負面案例）", "h3": null, "text": "**背景**：1997 年成立，替 Compaq 做 iPAQ、替電信商做貼牌 Windows Mobile 手機，被稱為全球最大 Windows Mobile 製造商。練出兩種能力：**替不同電信商快速調整機種的工程速度**、**和微軟與晶片廠的緊密合作**。"}, {"kind": "table", "h1": "四、個案重點", "h2": "A. HTC 的五個決策點（2006–2013，Lec3 外部分析負面案例）", "h3": null, "header": ["決策點", "當時處境", "可走的路", "HTC 的做法", "結果與可用架構"], "rows": [["**一 2006 自有品牌**", "做品牌＝和客戶（電信商、HP）搶消費者；前例宏碁分拆緯創、明基併西門子單季虧 1.55 億歐元", "A 專心代工\nB 全面品牌\nC 雙軌並行", "2006/6 歐洲推 HTC 品牌（只在無電信商合作地區）；2007/5 全球推品牌；多普達收購縮小到 1,450 萬美元", "股價 1,220 → 500 以下，HP、Palm 抽單；HTC Touch 5 個月賣 100 萬支；2008 代工占營收一成以下。**通路衝突、垂直整合、專有性**"], ["**二 2010 面板缺貨**", "三星 AMOLED 供貨不順，三星同時是供應商與對手；Nexus One 網路直售不如預期", "A 等三星擴產\nB 改用 Sony SLCD\nC 改 LCD＋多家長約", "2010/7/26 Desire、Nexus One 改用 Sony Super LCD", "全年出貨 2,467 萬支（倍增）、營收 2,788 億、淨利 395 億、市占 7.1%；但 Nexus S 改由三星做。**供應商議價力、關鍵資源在誰手上**"], ["**三 2011 高峰期資源分配**", "市值 338 億美元超越 Nokia（2011/4/6）、股價 1,300、Q3 美國出貨第一；蘋果專利訴訟、Google 買 Motorola（125 億美元）、Android 4.0 統一介面", "A 軟體／內容／雲端，必要時買 OS\nB 品牌行銷比聲量\nC 往上游鎖關鍵零件\nD 高配息分紅、機種覆蓋全價位", "股利 37 元、員工分紅 84.9 億（人均 140 萬）；投資分散：S3 Graphics 3 億美元、Beats 約 3 億美元、OnLive、Saffron、Dashwire、ADC 專利；3–6 月推 9 款新機", "**資源配置看真正策略**：錢沒有放在 C（零件）也沒集中在 B（行銷），分散到 A 和 D。**VRIO（Sense 被 Android 4.0 削弱 → I 失分）、互補者變競爭者**"], ["**四 2012 專利禁令與產品線**", "Q4'11 淨利 109.4 億首次衰退；One X 國際版 Nvidia、美國版高通（體驗不一）；高通 28nm 產能不足；零件成本比三星高至少 10%；台灣一年 14 款；三星 S III 145 國、100 天 2,000 萬支", "專利：A 繼續打\nB 和解\n產品：C 集中旗艦\nD 補中低價", "守高階（不做人民幣 1,000 元以下）；7 月賣一半 Beats 回收 1.5 億美元；11/10 與蘋果和解、10 年授權（估每支 6–8 美元）", "One X 卡美國海關、Q2 營收預估 1,050 → 910 億；2012 營收 2,890 億（−38%）而全球手機市場仍在成長；三星廣告約 43 億美元 vs HTC 推銷費用約 11 億美元。**五力（供應商、對手強）、策略群組**"], ["**五 2013 新 One 與零件**", "周永明：「對手太強、資源太多…我們行銷做得不夠」；新 One（M7）鋁合金、BoomSound、UltraPixel 400 萬畫素 vs S4 1,300 萬", "A 全押新 One\nB 補中低價拉量\nC 找策略夥伴\nD 縮小守高階", "選 A：數位行銷 +250%、傳統媒體 +100%、小勞勃道尼 1,200 萬美元；賣掉剩下 Beats（合計回收 4.15 億美元）", "相機零件拿不到：「**已不是供應商的一線客戶**」→ 延到 4/19 與 S4 同期上市；高階主管相繼離職；2013 營收 2,034 億、淨損 13.2 億、Q2 市占 2.89% 全球第 11。**加碼承諾 vs 遠見、規模與供應商優先順序**"]]}, {"kind": "ul", "h1": "四、個案重點", "h2": "A. HTC 的五個決策點（2006–2013，Lec3 外部分析負面案例）", "h3": "HTC 的 PESTEL（2011–2014，Lec3 投影片）", "items": ["**政治法律**：蘋果在美國 ITC 提專利訴訟，耗費法律費用與管理層精力，進口禁令風險。**經濟**：後金融海嘯復甦，高單價手機需求旺。**社會**：社群轉向行動端，相機與螢幕成為購買關鍵。**科技**：規格軍備競賽，Android 4.0 削弱 HTC Sense 的獨特性。"]}, {"kind": "table", "h1": "四、個案重點", "h2": "A. HTC 的五個決策點（2006–2013，Lec3 外部分析負面案例）", "h3": "HTC 的五力（2012，Lec3 投影片）", "header": ["作用力", "強度", "證據"], "rows": [["現有競爭者", "極高", "蘋果 iPhone 4S/5 守高階、三星 S III 龐大行銷、華為中興靠電信商侵蝕中低階、小米網路直銷"], ["潛在進入者", "高", "Android 開放＋聯發科公版方案，做手機門檻持續降低"], ["替代品", "低", "智慧型手機作為行動中心沒有實質替代"], ["供應商", "高", "三星既是對手也供應 AMOLED 與記憶體、優先供自家；處理器依賴高通，缺貨時蘋果三星優先"], ["買方", "高", "歐美電信商握有通路與補貼；消費者轉換品牌成本極低"], ["互補者", "—", "Google（Android）：2008 年是最緊密的夥伴（G1、Nexus One），2010 起 Nexus 交給三星、2011 買 Motorola，**從互補者變成潛在競爭者**"]]}, {"kind": "p", "h1": "四、個案重點", "h2": "A. HTC 的五個決策點（2006–2013，Lec3 外部分析負面案例）", "h3": "HTC 一句話總結", "text": "HTC 的成功建立在「**替電信商快速客製、最早押 Android**」，但這兩個優勢後來都變成負擔：客製化變成**機海與定位混淆**，Android 先行者優勢被 **Android 開放與 4.0 統一介面同質化**；關鍵零件掌握在**對手三星**手上，高峰期的錢又**分散在配息、分紅與周邊投資**，沒有做取捨。"}, {"kind": "p", "h1": "四、個案重點", "h2": "B. 全聯的五個決策點（1998–2021，Lec4 事業層級正面案例）", "h3": null, "text": "**背景**：前身是軍公教福利中心（1975 起，價格比市價低約三成）。1998 人事行政局解約，林敏雄（建設起家，46 歲）接手 **66 家**老店，年營收約 **127 億**，店多在地下室或無電梯的樓上，供應商沒信心、員工沒成本觀念。"}, {"kind": "table", "h1": "四、個案重點", "h2": "B. 全聯的五個決策點（1998–2021，Lec4 事業層級正面案例）", "h3": null, "header": ["決策點", "當時處境", "可走的路", "全聯的做法", "結果與可用架構"], "rows": [["**一 1998 定位**", "民營化後要和頂好、家樂福、萬客隆、大潤發、7-11 在同一市場競爭", "A 翻新成現代超市（差異化）\nB 店面簡單、價格比量販還低、靠展店撐採購量（低成本）\nC 先收縮（體質調整）", "選 B：**淨利只抓 2%、比同業便宜約 20%（八折）**；沿用寄賣、**不收上架費**、**每月付現**、**不刷卡**、無停車場、店開巷弄鄉鎮、**全國同價**", "虧 5 年開到 250 家才損平（另說 8 年 300 家），林敏雄用建設本業貼補；2003 年 200 家、營收 178 億超過頂好。**一般性策略（成本領導）、ERRC、V-P-C**"], ["**二 2004–07 擴張**", "250 家時蔡慶祥認為市場飽和；超市業比重 14% → 12.7%、2006 年只成長 1.93%；量販整併、家樂福揚言挑戰全聯", "A 自己展店\nB 併購區域超市\nC 開放加盟\nD 停在現有規模", "A＋B：「賠錢沒關係，再開下去就對了！」2004 楊聯社 22 家、2006 善美的 5 家（取得生鮮技術）、2007 台北農產 12 家；2006 首支電視廣告（3,000 萬，全聯先生）", "2008 年 400 家、營收約 400 億超過大潤發。**分散型產業＋價值創新整合、水平合併、連鎖（不加盟以保控制與一致）、規模經濟**"], ["**三 2006–11 生鮮**", "生鮮要清洗分切冷藏、報廢損耗，淨利只抓 2%，賣便宜就得虧；頂好推生鮮小店", "A 不做生鮮\nB 照行情定價補乾貨\nC 也便宜賣，自建處理中心與物流，接受多年虧損\nD 只在都市好店賣", "選 C：2008 決議、林弘斌負責；生鮮全部再打八折「就算賠錢也要做」；2011 再投 80 億蓋生鮮處理中心；2012 觀音、岡山物流中心（約百億）", "有生鮮的店營業額都成長；2011 營收 620 億超過家樂福；2015 生鮮約占營收 17%；**生鮮虧十多年，2020 疫情才首次小賺**。**卡在中間 vs 效率前緣外推（價值創新）、策略承諾**"], ["**四 2015 七百家店後**", "2014 年 740 家、760 億；超市成長 4.5% vs 量販 0.5%；美廉社竄升第二；松青虧損待售；品牌形象「你怎麼在這裡？」", "A 加密展店\nB 收購松青\nC 改品牌溝通與店型\nD 減少促銷改善獲利", "B＋C，價格原則不變：2015/3「**全聯經濟美學**」（長得漂亮是本錢，把錢花得漂亮是本事）；4.5 億買松青 65 家（公平會：松青 1.08%、全聯 20.96%，放行）；2018 新店型、mini 輕超市", "2016 營收 1,010 億首破千億；30 歲以下顧客 +16%；新店型業績 +20–50%；900 萬會員貢獻 85% 業績。**Ansoff、市場區隔、產品增殖**"], ["**五 2020–21 對手合併**", "家樂福 32.3 億買頂好＋JASONS 224 家；量販網購比重上升；大潤發與家樂福都在賣", "A 守超市本業、投數位外送\nB 買大潤發跨量販\nC 買更大的家樂福", "先做數位防禦（PX Pay 2019、PXGo! 分批取貨、小時達 2021、全支付執照）；2021/10/22 選 B 收購大潤發 95.97%（約 115–130 億）", "公平會 2022/7 附 **7 項負擔**（3 年全國訂價、不收上架費、刪最惠客戶條款等）；統一 290 億（最終 311.6 億）買家樂福。林敏雄：買家樂福公平會一定不會過。**競爭強度、管理競爭對手、衰退產業的領導策略**"]]}, {"kind": "table", "h1": "四、個案重點", "h2": "B. 全聯的五個決策點（1998–2021，Lec4 事業層級正面案例）", "h3": "全聯後來的發展與「回頭找端倪」（Lec4 投影片原表）", "header": ["做法", "帶來的優勢", "後來的限制"], "rows": [["不收上架費、每月付現", "比量販便宜 10%–15%", "2024 年公平會認定違反結合負擔，罰 2,000 萬"], ["展店與併購區域超市", "2003 年超越頂好", "再買同業會碰到公平會"], ["生鮮便宜賣、自建物流", "成為家庭日常採買通路", "生鮮虧損十多年、固定成本高"], ["品牌溝通與新店型", "30 歲以下顧客增加", "大小店並行，大店接近量販"], ["支付與線上", "線上業績近 110 億元", "全支付累計虧損 20 億元"]]}, {"kind": "ul", "h1": "四、個案重點", "h2": "B. 全聯的五個決策點（1998–2021，Lec4 事業層級正面案例）", "h3": "全聯後來的發展與「回頭找端倪」（Lec4 投影片原表）", "items": ["規模：2024 全聯＋大潤發超市量販市占 **41.3%**；2025 營收突破 2,200 億、超市 1,250+ 家、大全聯 21 家。", "2025/8 大潤發改名**大全聯**；統一家樂福 2026/7 改名萬家福（量販）、樂家康（超市）。", "標價之亂 → 投入 40 億導入電子標籤；接班「家族與專業經理人雙軸」；至今未上市。"]}, {"kind": "p", "h1": "四、個案重點", "h2": "B. 全聯的五個決策點（1998–2021，Lec4 事業層級正面案例）", "h3": "全聯一句話總結", "text": "全聯從頭到尾守住**同一個取捨**：淨利 2%、不收上架費、全國同價，把省下的成本全部讓給顧客；再用**規模（展店＋併購）**和**自建物流與生鮮**把成本壓得更低、價值做得更高，把效率前緣往外推。代價是生鮮虧十多年、公平會的限制與全支付虧損。"}, {"kind": "table", "h1": "四、個案重點", "h2": "C. 全聯 vs HTC 對照（整合題必備）", "h3": null, "header": ["比較面向", "全聯", "HTC"], "rows": [["有沒有取捨", "有：淨利 2%、不做裝潢停車刷卡，二十年不變", "沒有：旗艦與機海並行、高峰期錢分散在配息分紅與周邊投資"], ["關鍵資源掌握在誰手上", "自己：自建物流、生鮮處理中心、採購量", "對手：三星的面板與記憶體、高通的處理器、Google 的 Android"], ["長期承諾", "生鮮虧十多年仍堅持（有中間產出：營業額成長、來客）", "2013 才全押新 One，時機已晚，供應商已不把它當一線客戶"], ["規模與議價力", "規模愈大採購愈便宜，形成正向循環", "出貨下滑 → 零件拿不到 → 上市延後 → 出貨更少（負向循環，像 3dfx）"], ["產業位置", "超市業成長、分散 → 可整合", "手機業成長但進入震盪、Android 同質化 → 被兩大（蘋果、三星）擠壓"]]}, {"kind": "note", "h1": "四、個案重點", "h2": "D. 決策點選項優缺點速查（對應老師的 ABC 題型）", "h3": null, "text": "考試時實際選擇與之後的資訊可能被拿掉，所以「為什麼選它」要從當時看得到的條件推理。寫法：每個選項優點 2 點、缺點 2 點，最後一段寫選擇理由。"}, {"kind": "table", "h1": "四、個案重點", "h2": "D. 決策點選項優缺點速查（對應老師的 ABC 題型）", "h3": "全聯", "header": ["決策點", "選項", "優點", "缺點"], "rows": [["一 1998 定位", "A 翻新成現代超市", "符合一般消費者期待、改善老舊形象；毛利較高", "66 家翻新資本大、店在地下室難翻身；成本高，價格比不過量販，和頂好正面撞 → **卡在中間**"], ["", "**B 簡單店面＋最低價＋展店（實選）**", "沿用寄賣、不收上架費、低店租的**既有低成本結構**；和量販拉開價格差，建立「最便宜」心智；規模大 → 採購議價力", "淨利 2% 需要極大量才賺錢；虧 5–8 年要本業輸血；形象老舊"], ["", "C 先收縮", "止血、先調體質、風險低", "違背不裁員承諾；規模更小、採購量更低；市場讓給量販與頂好"], ["", "**選 B 的理由**", "手上唯一能贏的資源是低成本結構；林敏雄有建設本業的現金可以撐虧損；量販把全聯社打到 127 億，只有比量販便宜才有生路", ""], ["二 2004–07 擴張", "A 自己展店", "完全掌控品質、全國同價", "速度慢；北部據點少、租金高"], ["", "**B 併購區域超市（實選，與 A 並行）**", "一次取得店面、人員；**取得生鮮技術**（善美的）；消滅地區對手；採購量放大", "整合成本、店況不一、組織文化衝突"], ["", "C 開放加盟", "擴張快、資本需求低", "難維持全國同價與成本紀律；加盟主不守規則；失去控制"], ["", "D 停在現有規模", "先把單店獲利做好", "家樂福小店、頂好會先整合市場；規模經濟停滯"], ["", "**選 A＋B 的理由**", "超市業是**分散型產業**，誰先整合誰拿到規模經濟；全國同價需要直營控制，所以不加盟", ""], ["三 2006–11 生鮮", "A 不做", "守住低成本、不虧錢", "缺日常採買品項、來客頻率低；顧客被頂好、量販、傳統市場拿走"], ["", "B 做，照行情定價", "生鮮毛利可補乾貨、風險低", "破壞「全聯最便宜」的定位，顧客心智不一致"], ["", "**C 也便宜賣＋自建處理中心物流（實選）**", "提高**來客頻率**與客單；和對手拉開差距；**跨過門檻就成為進入障礙**", "80 億處理中心＋約百億物流；生鮮虧十多年；跨不過就全部打水漂"], ["", "D 只在都市好店賣", "小規模測試、風險小", "形不成全國物流規模；破壞全國一致"], ["", "**為何此時做（老師答案）**", "已有規模與資本（約 400 家）；併購帶來生鮮技術；跨過門檻成壁壘；不做別人也會做（日本先例）；消費習慣改變（傳統、黃昏市場去不了）", ""], ["四 2015 七百家後", "A 加密展店", "規模持續擴大", "市場飽和；品牌老化問題沒解決"], ["", "**B 收購松青（實選）**", "一次取得 65 家都會店；消滅對手；價格便宜（4.5 億、對方虧損待售）", "整合虧損門市；公平會審查（當時可過）"], ["", "**C 改品牌溝通與店型（實選）**", "吸引年輕與都市客、價格原則不變", "廣告與改裝成本；大店愈來愈像量販"], ["", "D 減少促銷拉近同業", "短期獲利改善", "背離低價定位；讓美廉社等對手趁機"], ["五 2020–21 對手合併", "A 守超市本業", "不碰公平會、資源集中在數位外送", "家樂福整合頂好後規模逼近；量販被別人拿走"], ["", "**B 買大潤發（實選）**", "取得量販業態、土地建物、約 250 億營收；**公平會可能過**；金額可承受", "量販成長慢；公平會負擔綁手；整合成本"], ["", "C 買家樂福", "規模最大", "公平會**一定不過**（林敏雄自己說）；價格最高（統一花 311.6 億）"]]}, {"kind": "table", "h1": "四、個案重點", "h2": "D. 決策點選項優缺點速查（對應老師的 ABC 題型）", "h3": "HTC", "header": ["決策點", "選項", "優點", "缺點"], "rows": [["一 2006 自有品牌", "A 專心代工", "不和客戶衝突、營收穩定", "毛利薄、受客戶議價；價值留在品牌商"], ["", "B 全面改做品牌", "取得品牌溢價、直接面對消費者", "客戶抽單（宏碁前例）；行銷資源不足；明基併西門子虧損前例"], ["", "**C 雙軌並行（實選）**", "避開與電信商衝突、逐步建立品牌、保住代工收入", "品牌累積慢；仍依賴電信商；資源分兩邊"], ["二 2010 面板缺貨", "A 等三星擴產", "維持 AMOLED 規格", "出貨節奏受制於**對手兼供應商**；錯過需求旺季"], ["", "**B 改用 Sony SLCD（實選）**", "快速擴產、擺脫對手掌控", "要重新設計；規格可能被看成降級"], ["", "C 改 LCD＋多家長約", "長期分散供應風險", "談判耗時，短期解決不了缺貨"], ["三 2011 高峰資源分配", "A 軟體／內容／雲端／買 OS", "降低對 Android 依賴、建立差異化", "燒錢；OS 生態系極難做；不是核心能力"], ["", "B 品牌行銷比聲量", "和蘋果三星拼知名度", "三星預算大數倍，很難拼贏"], ["", "C 往上游鎖零件", "**掌握關鍵資源**、降低供應商議價力", "資本支出大；不是專長"], ["", "D 高配息分紅＋全價位覆蓋（實際偏向）", "留才、股東滿意、覆蓋各電信商", "錢沒留給未來；機海稀釋品牌與資源"], ["四 2012 專利與產品", "A 繼續打專利", "不付授權金", "禁令風險持續、耗費管理精力"], ["", "**B 和解（實選）**", "取得確定性、專心產品", "每支手機付授權費，成本上升"], ["", "**C 集中旗艦（實選）**", "守住高階形象與毛利", "高階被蘋果三星擠壓、量不夠"], ["", "D 補中低價", "拉量、提升在供應商的優先順序", "品牌稀釋；面對華為、中興、小米"], ["五 2013 新 One", "**A 全押新 One（實選）**", "資源集中、打出代表作", "零件拿不到、一次大賭；失敗就沒有退路"], ["", "B 補中低價拉量", "出貨回升、供應商重新重視", "毛利低、品牌稀釋"], ["", "C 策略夥伴／出售部分事業", "取得資源與通路", "失去自主權"], ["", "D 縮小守高階", "先顧獲利", "規模更小，更不是供應商一線客戶"]]}, {"kind": "note", "h1": "四、個案重點", "h2": "E. 統一超商（老師舉例可能出的題）", "h3": null, "text": "以下為依課程架構與 Lec4 投影片（統一集團的因應）整理的答題素材，非個案原文。"}, {"kind": "ul", "h1": "四、個案重點", "h2": "E. 統一超商（老師舉例可能出的題）", "h3": null, "items": ["**一般性策略**：**差異化**為主（便利：店多、24 小時、離家近；服務多元：鮮食、繳費、取貨、咖啡），並靠規模與物流（統一集團自有物流）壓成本。顧客願意為「便利」付比較高的價格（V 高）。", "**五力**：既有競爭者高（全家、萊爾富、OK，以及全聯 mini、小型超市）；新進者低（店點、物流、品牌是障礙）；替代品中（超市、外送平台、電商）；供應商議價力低（通路強勢、量大）；買方議價力低（個人消費者分散，但轉換成本也低）；互補者：行動支付、外送平台。", "**Ansoff**：市場滲透＝OPEN POINT 會員整合；產品開發＝鮮食、自有品牌、健康產品；市場開發＝結合星巴克、康是美的複合旗艦店；多角化＝2022 年收購家樂福（量販、超市）。", "**面對全聯的因應**（Lec4 投影片）：收購家樂福補量販與超市版圖、7-11＋家樂福＋康是美協同、食品製造與零售整合、數位全通路、整合會員、強化健康產品、用星巴克形象走高端。", "**ERRC 舉例（記得寫效益）**：提升＝店點密度 → 降低顧客的移動時間；創造＝店內取貨、繳費 → 一次完成多件生活事務，省下跑不同地點的時間。"]}, {"kind": "note", "h1": "五、預測考題與答題大綱", "h2": null, "h3": null, "text": "★ 越多代表出題機率越高。標「老師示範」的是老師在錄音裡親口舉的題型，最優先準備。"}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "0. 老師示範過的題型（最優先）", "h3": null, "title": "★★★ T1（老師示範）. 全聯在 2006–2011 年考慮生鮮，有 A 不做、B 照行情定價、C 也便宜賣並自建物流三個選項。請分別列出優缺點，並說明全聯為什麼選 C。", "pts": ["A 不做：優＝守住低成本、不虧；缺＝缺日常採買品項、來客頻率低，顧客流向頂好、量販、傳統市場。", "B 照行情：優＝生鮮毛利補乾貨、風險低；缺＝破壞「最便宜」定位，顧客心智不一致。", "C 便宜賣＋自建：優＝提高來客頻率、和對手拉開差距、跨過門檻成為進入障礙；缺＝投資大（80 億＋約百億）、虧損多年、失敗就打水漂。", "選 C 的理由（推理鏈）：已有規模與資本 → 承擔得起風險；併購取得生鮮技術 → 有能力做；生鮮成本高 → 跨過就是對手難以複製的壁壘；不做別人也會做（日本先例）、消費習慣改變（去不了傳統市場）→ 不做風險更大。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "0. 老師示範過的題型（最優先）", "h3": null, "title": "★★★ T2（老師示範）. 全聯做生鮮，以 Porter 的低成本／差異化屬於哪一種？為什麼選在這個時間點？", "pts": ["屬於**差異化**（完整商品組合、新鮮、日常採買的便利），但價格仍維持低價。", "時間點：規模已大、有資本 → 風險可承受；有併購得來的技術；可和對手拉開差距、形成壁壘；日本先例與台灣消費習慣改變 → 不做會被別人做。（四點各寫一行，附推理。）"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "0. 老師示範過的題型（最優先）", "h3": null, "title": "★★★ T3（老師示範）. 什麼是市場鴻溝？為什麼會發生？請舉例說明（不可用上課的例子）。", "pts": ["定義：從早期採用者過渡到早期多數者之間的斷層，產品常在這裡停滯或退出。", "原因：兩群顧客需求不同（早期採用者忍受不完美、早期多數者要好用可靠便宜、別人都在用），沿用原商業模式跨不過；競爭、成本、客服、市場教育壓力同時出現。", "例子＋理由（擇一）：Apple Vision Pro（高價、笨重、內容少 → 缺相對優勢、複雜性高）；VR 頭戴裝置／HTC VIVE（暈眩、設定麻煩、內容少）；氫能車（加氫站少，缺互補品）。", "可補一句：如何跨越 → 用擴散加速因素（降價提升相對優勢、簡化、試用、口碑）。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "0. 老師示範過的題型（最優先）", "h3": null, "title": "★★★ T4（老師示範）. HTC 在五力分析裡面臨什麼狀況？", "pts": ["照波特五力逐項寫強度＋證據（見第四部分 HTC 五力表）：對立極高、新進者高、替代品低、供應商高、買方高；可加互補者 Google。", "結論一句：最強的兩力（對立、供應商）是同一家公司三星 → 結構性劣勢。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "0. 老師示範過的題型（最優先）", "h3": null, "title": "★★ T5（老師示範）. 解釋專有名詞：早期多數者／加速擴散的因素（並舉例）。", "pts": ["早期多數者：會權衡新產品的成本效益，重視容易使用與可靠，要靠大眾通路與大眾媒體。", "五個加速因素＋例子：相對優勢（串流取代實體）、複雜性（愈簡單愈快）、相容性（Apple 介面）、可試用性（化妝品試用包、訂閱首月免費）、可觀察性（口碑、網紅）。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "0. 老師示範過的題型（最優先）", "h3": null, "title": "★★ T6（老師舉例）. 以統一超商為例，分析它的競爭策略／五力／Ansoff，或它如何因應全聯。", "pts": ["素材見第四部分 E。答題時記得每一點都寫到「帶來什麼效益」。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "A. 全聯（個案課前思考題）", "h3": null, "title": "★★★ Q1. 決策點一的三條路各屬於哪一種一般性事業層級策略？用 ERRC 整理 2006 年廣告裡全聯「沒有」的東西：哪些在降成本，哪些可能讓顧客覺得價值變低？", "pts": ["A 翻新成頂好式現代超市、價格隨成本調整 → **差異化**（但規模小、成本高，易**卡在中間**）；B 簡單店面、比量販還便宜、靠開店數撐採購 → **成本領導**；C 先收縮 → 不是一般性策略，屬**撤退／收割**或先調體質（也可答聚焦）。", "**消除**：明顯招牌、拋光石英磚、漂亮制服、上架費、刷卡服務（省 3–5% 手續費）、宅配服務、顧客停車場。**減少**：寬敞走道與裝潢、店租（開巷弄鄉鎮）、毛利（淨利 2%）。**提升**：價格便宜（比同業約八折）、價格一致（全國同價）、到店便利（社區密度）。**創造**：「不讓你付錢買那些帶不回去的東西」的誠實低價品牌形象、素人全聯先生。", "**降成本**：招牌、石英磚、制服、走道、上架費、刷卡。**可能降低顧客價值**：停車場（開車族）、刷卡（便利性）、宅配（大量採購）——這些是顧客真的用得到的東西，所以全聯靠價格差把 V－P 補回來。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "A. 全聯（個案課前思考題）", "h3": null, "title": "★★★ Q2. 2000 年代的台灣超市業算不算分散型產業？比較決策點二的四條路。", "pts": ["算：各地有楊聯社、善美的、台北農產、松青、北海道、統冠等區域連鎖，頂好最大也只 188 家；品牌忠誠有地域性、缺乏全國規模經濟。", "整合條件：價值創新者要定義不同的價值（全聯＝最低價），並**用規模經濟降成本**。A 自展慢但控制強；**B 併購**一次取得店面、人員與技術（善美的的生鮮能力）；C 加盟擴張快但會失去全國同價與成本紀律；D 停下來則讓家樂福小店或其他整合者先整合。", "結論：A＋B 最符合整合分散型產業的邏輯（水平合併＋連鎖），代價是短期賠錢（「賠錢沒關係，再開下去就對了」），結果 2008 年 400 家超過大潤發。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "A. 全聯（個案課前思考題）", "h3": null, "title": "★★★ Q3（課堂現場判斷題）. 2008 年全聯約 400 家、淨利 2%，生鮮要不要做？怎麼做？願意付出什麼代價？", "pts": ["建議選 **C**：生鮮是家庭每天都要買的品項，能提高**來客頻率**與客單（有生鮮的店營業額都成長，南京東路店生鮮占 30%）；若照行情定價（B）會破壞「全聯最便宜」的定位，顧客心智不一致。", "架構：生鮮讓全聯在**效率前緣**上往差異化方向移動（商品組合完整、日常採買），同時**自建處理中心與物流**壓低成本 → 把效率前緣往外推＝**價值創新**，而不是卡在中間。", "代價：80 億處理中心＋約百億物流中心、生鮮虧損十多年（2020 才小賺）、靠乾貨獲利補貼，固定成本變高。", "其他選項代價：A 讓頂好、量販、傳統市場拿走日常採買；B 定位模糊；D 只服務都市，無法形成全國規模與物流經濟。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "A. 全聯（個案課前思考題）", "h3": null, "title": "★★ Q4. 生鮮讓全聯在效率前緣上往哪裡移動？是「卡在中間」的反例，還是還在等結果？需要哪些數字判斷？", "pts": ["往**差異化**移動（完整商品組合、二代店零農藥蔬果），但價格仍維持低價 → 同時往外推前緣。", "可答「目前看是反例」：營收 2011 超過家樂福、2016 破千億、2024 市占 41.3%，整體獲利率約 2% 沒崩。也可答「還在等」：生鮮部門本身到 2020 才小賺，固定成本高。", "需要的數字：生鮮部門損益與毛利、生鮮占營收比（2015 年 17%）、有生鮮店 vs 無生鮮店的來客數與客單、物流中心產能利用率、與同業的價格差與 ROIC。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "A. 全聯（個案課前思考題）", "h3": null, "title": "★★★ Q5. 用 Ansoff 矩陣替 2012–2018 年全聯的動作分類，哪些改變了目標顧客？", "pts": ["**市場滲透**：加密展店、松青 65 家（同一群社區顧客）、會員福利卡。**產品開發**：二代店生鮮、熟食、現烤麵包、白木屋麵包、自有品牌（同顧客多做生意）。**市場開發**：**經濟美學**廣告（年輕與都市客群，30 歲以下 +16%）、imart、mini 輕超市（雙北高租金商圈）、新店型的停車場與用餐區（開車家庭）。", "改變目標顧客＝經濟美學、imart、mini、新店型；在同一群顧客身上多做生意＝二代店、松青、熟食烘焙。", "延伸：2019 後 PXGo!／小時達＝市場開發（線上通路）；全支付、大潤發＝多角化。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "A. 全聯（個案課前思考題）", "h3": null, "title": "★★★ Q6. 2020 年家樂福買頂好後，超市和量販的界線還在嗎？用競爭強度與管理競爭對手比較決策點五三條路。", "pts": ["界線模糊：家樂福把頂好改成「家樂福便利購」進超市，全聯開 500 坪旗艦店與新店型（大店接近量販），量販網購比重上升 → 兩業態搶同一個家庭採買需求，**同質化 → 競爭強度上升**；高固定成本（物流、門市）也推高競爭。", "A 守本業：保留資源但讓家樂福坐大、量販被別人整合。**B 買大潤發**：取得 20 家量販、約 250 億營收、土地建物，用**規模＋產品增殖**阻絕對手，屬衰退／成熟產業的**領導策略**；公平會附條件放行。C 買家樂福：規模最大但公平會一定不過、價格更高（統一花 311.6 億）。", "管理競爭對手角度：全聯是**價格領導者**（全國同價、不收上架費），併購後公平會用負擔限制它（3 年全國訂價、刪最惠客戶條款），2024 仍因違反負擔被罰。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "A. 全聯（個案課前思考題）", "h3": null, "title": "★★ Q7. 讀完第九節：全聯今天的優勢哪些是五個決策點建立的？今天的問題有哪些當時就看得到端倪？", "pts": ["優勢：低價定位與供應商條件（DP1）、規模與密度（DP2）、生鮮與自建物流（DP3）、年輕客群與新店型（DP4）、量販＋超市雙業態與數位（DP5）。", "端倪：①罰款：要求售價是其他通路一定折數 ← 1998 年起靠壓供應商條件、規模愈大議價力愈強；②標價之亂 ← 1,250 家店、價格由總部統一管理、大小店並行；③全支付虧 20 億 ← 林敏雄 2021 說外送「做一單賠一單」，以防禦為目的的投入。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "B. HTC（個案課前思考題＋Lec3 討論題）", "h3": null, "title": "★★★ Q8. 選一個決策點，寫出 HTC 的兩項優勢與兩項劣勢；到下一個決策點，這些優勢變成什麼？", "pts": ["範例（DP3 2011）：**優勢**：①替電信商快速客製的工程速度（美國四大電信商都有專屬機）②最早押 Android、品牌聲量（市值超越 Nokia、美國出貨第一）。**劣勢**：①關鍵零組件依賴對手三星與高通 ②行銷預算遠小於三星、機種太多定位混淆。", "到 DP4（2012）：工程速度變成**機海**（台灣一年 14 款，消費者搞不清楚）；Android 先行者優勢被 **Android 4.0 統一介面**與聯發科公版方案**同質化**，Sense 不再獨特。原因：外部環境（Google 轉向三星／Motorola）＋內部沒做取捨。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "B. HTC（個案課前思考題＋Lec3 討論題）", "h3": null, "title": "★★★ Q9. 以 2012 年為準畫出 HTC 的五力加互補者。Google、高通、三星、美國電信商各在哪個位置？誰在 2008–2012 換了位置？", "pts": ["Google：**互補者**（Android）；高通：**供應商**（處理器，產能不足時優先蘋果三星）；三星：**既是供應商（AMOLED、記憶體）也是最主要競爭者**；美國電信商：**買方**（握通路與補貼）。", "換位置的角色：**Google**——2008 年是 HTC 最緊密的夥伴（G1、Nexus One），2010 起 Nexus S、Galaxy Nexus 交給三星做、2011 年買 Motorola，從互補者變成**潛在競爭者**；**三星**——從單純供應商變成同時掐住零件的對手。（也可提電信商：從 ODM 時代的客戶變成強勢買方。）", "結論：五力中最強的是**現有競爭者與供應商**，而且兩者是同一家公司（三星），這是 HTC 最大的結構性弱點。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "B. HTC（個案課前思考題＋Lec3 討論題）", "h3": null, "title": "★★ Q10. 挑一個你認為當時最合理的決定替它辯護，再說明它讓下一個決策點少了哪些選項。", "pts": ["範例：DP2 改用 Sony SLCD 是合理的——等三星等於把出貨節奏交給對手，2010 年出貨倍增證明決定正確。代價：和三星關係轉弱，下一步 Google 第二代 Nexus 交給三星；也讓 HTC 確認「**零件掌握在別人手上**」的問題，但 DP3 卻沒有選 C 往上游鎖零件。", "另一範例：DP1 雙軌做品牌合理（避開電信商衝突、借鏡明基失敗），但讓 HTC 繼續依賴電信商客製機 → 埋下機海與品牌混淆。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "B. HTC（個案課前思考題＋Lec3 討論題）", "h3": null, "title": "★★★ Q11. 2012–2013 年全球智慧型手機仍快速成長（7.25 → 10.04 億支），HTC 銷量卻下降，請用產業生命週期與策略群組解釋。", "pts": ["生命週期：市場在**成長期末段往震盪期**移動：首購需求仍大，但 Android＋聯發科讓進入門檻變低，大量進入者，競爭焦點從「有沒有智慧型手機」轉成**行銷聲量與規模**；成長期的競爭程度低只對領先者成立。", "策略群組：HTC 處在**高階 Android 旗艦**群組，和蘋果、三星正面競爭（同群組＝最立即的威脅）；低價群組又有華為、中興、小米。HTC 不做人民幣 1,000 元以下手機，**市場成長主要在中低階**，所以整體市場長、它的群組被三星吃掉。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "B. HTC（個案課前思考題＋Lec3 討論題）", "h3": null, "title": "★★ Q12（Lec3 討論題五）. 回到 2012 年，三個方向選哪個：放棄機海全押旗艦 / 鞏固長處打特定客群 / 結盟自保？說明犧牲什麼。", "pts": ["建議選「**鞏固長處、打特定客群（集中差異化）**」：HTC 的行銷預算約三星的四分之一，正面對決（全押旗艦）拚不過聲量；設計、螢幕、音效是它真正的強項，可鎖定重視設計與影音的客群，並降低機種數。犧牲：放棄市占第一的目標與部分電信商客製機，營收規模縮小。", "或選「結盟」：可補零件議價力（與 Sony、日系或台系品牌共同採購），犧牲部分自主權與品牌獨立。", "答題重點是講出**取捨**與**代價**，並呼應「關鍵資源掌握在誰手上」。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "B. HTC（個案課前思考題＋Lec3 討論題）", "h3": null, "title": "★★ Q13. 用 VRIO 評估 HTC 的 Sense 介面／工程速度。", "pts": ["V：有（客製快、介面差異化，帶動 2010–11 成長）。R：2009–10 年稀有，但 Motorola、三星陸續投入 Android 後不稀有。I：**失分**——Android 4.0 原生介面大幅優化、聯發科公版讓做手機容易，易被替代與模仿（也可用「可替代性測試」）。O：**失分**——機種多、行銷分散、高階主管離職，組織沒有把能力轉成持續優勢。", "結論：暫時性競爭優勢，不是持續競爭優勢。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "B. HTC（個案課前思考題＋Lec3 討論題）", "h3": null, "title": "★★ Q14. 2013 年 HTC 全押新 One（行銷預算數位 +250%）是遠見還是加碼承諾？", "pts": ["用 Lec2 三個事前判準：①有沒有可被推翻的條件（看不到）；②是否保留選擇權（一次大筆行銷、找代言人，停下來就歸零）；③有沒有找反面證據（零件已拿不到、高層離職）。→ 比較像**加碼承諾**。", "對照全聯生鮮：持續小額、沿路有中間產出（有生鮮店營業額成長、來客上升），比較像遠見。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "B. HTC（個案課前思考題＋Lec3 討論題）", "h3": null, "title": "★ Q15. 新聞題：挑一則新聞，當時的讀者會得出什麼判斷？和經營團隊手上的資訊有何不同？", "pts": ["例：2011/10 Canalys「HTC 是美國智慧型手機的領先者」——讀者會判斷 HTC 如日中天。但這是**出貨到通路**的口徑，Nielsen 看用戶持有蘋果仍最大；經營團隊應該知道零件依賴、專利訴訟、Google 轉向三星這些風險。啟示：**數字口徑不同，結論不同**（呼應 AI 產業五力的兩種口徑）。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "C. 理論與整合題", "h3": null, "title": "★★★ Q16. 為什麼全聯成功、HTC 失敗？請用課堂架構比較。", "pts": ["用 Lec3「AMD vs HTC」三件事當骨架：**有沒有做取捨、關鍵資源掌握在誰手上、決策提前了幾年**，再套全聯（見第四部分 C 表）。", "補充：Lec2「策略要回答我放棄了什麼」；Lec2「資源配置最能看出真正的策略」（全聯錢投在物流與生鮮，HTC 錢在配息分紅與周邊投資）。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "C. 理論與整合題", "h3": null, "title": "★★ Q17. 用 BCG 矩陣分析全聯集團事業組合（或 HTC）。", "pts": ["全聯（推論）：超市本業＝**金牛**（市占第一、超市成長 4% 左右）；線上小時達／全電商＝**問號→明星**（成長快、占營收 6%、目標 20%）；全支付＝**問號**（用戶第三、累虧 20 億）；大全聯量販＝第二大但量販成長慢，介於**金牛／老狗**之間，靠與超市互補。策略：用超市現金養線上與支付，挑有機會第一的加碼。", "HTC：2010–11 美國是**明星** → 2012 投資不足、相對市占下滑成**問號** → 2013 後**老狗**；沒有金牛可以救，VIVE 是用剩下資源押新的問號。", "記得寫出 BCG 的限制（只有兩維度、靜態）。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "C. 理論與整合題", "h3": null, "title": "★★ Q18. 解釋 V-P-C 與 ROIC 拆解，說明全聯低成本策略動的是哪一段。", "pts": ["全聯把 C 壓低（不收上架費→供應商反映在售價、無裝潢無停車場、巷弄低租金、自建物流），再把 P 降得比同業低，讓顧客的 V－P 變大；全聯自己的 P－C 很薄（淨利 2%），靠**資本週轉率**（高周轉、現金結帳換供應商好條件、規模）撐 ROIC。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "C. 理論與整合題", "h3": null, "title": "★★ Q19. 策略三層級：全聯／HTC 的問題分別出在哪一層？", "pts": ["HTC：公司層級（2011 投資 S3、Beats、OnLive 等周邊，資源分散）＋事業層級（旗艦與機海並行、定位模糊）＋功能層級（M7 良率、零件供應、行銷不足）。最根本是事業層級沒有取捨。", "全聯：大潤發、全支付屬公司層級的多角化；生鮮與店型是事業層級；標價錯誤是功能層級（營運）問題。"]}, {"kind": "q", "h1": "五、預測考題與答題大綱", "h2": "C. 理論與整合題", "h3": null, "title": "★ Q20. 名詞解釋（短答）", "pts": ["策略／營運效能、競爭優勢／持續競爭優勢、獨特能力、VRIO、模仿障礙五測試、高階生產要素、策略群組、間斷均衡、效率前緣、價值創新、卡在中間、分散型產業、連鎖、產品增殖、限制定價、價格領導、收割策略、鴻溝、確認偏誤、加碼承諾、魔鬼代言人法、辯證探詢法、外視法。"]}, {"kind": "ol", "h1": "六、考前一週讀書建議", "h2": null, "h3": null, "items": ["先把兩份個案的**五個決策點表格**背熟：年份、選項、實際做法、一個關鍵數字。", "把第五部分 ★★★ 的題目各自用 5 分鐘寫一次大綱（結論→架構→證據→代價）。", "理論部分以**名詞＋一個課堂例子**的方式記：例如「VRIO → Intel 晶圓廠 O 失分」、「卡在中間 → 全聯生鮮反例」。", "考前一天把小抄再看一遍，確認自己知道每一格在哪裡，考試時才找得到。"]}, {"kind": "note", "h1": "六、考前一週讀書建議", "h2": null, "h3": null, "text": "資料來源：Lec1–Lec4 講義（吳政翰）；《HTC 的五個決策點（2006–2013）》學生版 2026/9；《全聯的五個決策點（1998–2021）》學生版 2026/10。個案數字依個案原文；BCG 象限與部分答題建議為依課程概念所做的推論。"}];
+// ---------- 專有名詞 ----------
+const TERMS = [
+  // Lec2
+  ["Lec2","策略","經理人為了提升公司績效所採取的**一組相關行動**。單一決定不是策略，彼此矛盾的一堆決定也不是。","策略要回答「我放棄了什麼」"],
+  ["Lec2","營運效能","把同一件事做得比別人好（良率、交期、成本）。**會被模仿與追平**，最後大家一起降價。","對比：策略是選擇做不一樣的事，且刻意不做某些事"],
+  ["Lec2","競爭優勢／持續競爭優勢","獲利與利潤成長高於同業平均＝競爭優勢；連續維持好幾年＝持續競爭優勢。差別在能否擋住模仿。","HTC Sense：暫時性優勢，被 Android 4.0 追平"],
+  ["Lec2","獨特能力","公司特有、讓它在效率、品質、創新、顧客回應上勝過對手的能力，來自資源與能耐。","全聯：低成本結構＋自建物流"],
+  ["Lec2","競爭優勢四基石","**效率、品質、創新、顧客回應**，最後走向差異化或低成本兩個出口。","品質＝台積電、顧客回應＝Costco"],
+  ["Lec2","商業模式","一組策略串成能自己運轉的系統，各部分互相加強；各環節彼此獨立只能算待辦清單。","全聯飛輪：低價→來客→規模→議價力→更低成本"],
+  ["Lec2","ROIC","**淨利／投入資本＝銷售報酬率 × 資本週轉率**。差異化主要動第一段，低成本兩段都動。","全聯淨利 2% 很薄，靠高週轉撐 ROIC"],
+  ["Lec2","V－P－C","顧客得到 V－P（消費者剩餘），公司得到 P－C。**差異化＝把 V 往上推；低成本＝把 C 往下壓**。","全聯壓 C 再把 P 降得比同業低"],
+  ["Lec2","策略三層級","**公司層級**（待在哪些事業、併購退出）、**事業層級**（在這個市場怎麼贏）、**功能層級**（研發生產行銷把選擇做出來）。","HTC 根本問題在事業層級沒取捨"],
+  ["Lec2","意圖策略 vs 突現策略","Mintzberg：規劃的只有一部分會實現，實際策略還包含沒規劃、臨時出現的部分。",""],
+  ["Lec2","情境規劃","找兩個影響最大又最不確定的變數交叉成四個情境，每個寫出應對動作與觸發指標。",""],
+  ["Lec2","確認偏誤","先有結論再挑支持的證據。","會議只請支持方報告"],
+  ["Lec2","加碼承諾","計畫已顯示要失敗仍持續投入；背後是沉沒成本、面子與職涯。","HTC 2013 全押新 One"],
+  ["Lec2","類比推論／代表性偏誤","用簡單類比理解複雜問題／用小樣本或生動案例推出通則。","「日本當年就是這樣走過來的」"],
+  ["Lec2","控制的幻覺／現成偏誤","高估自己的控制能力／用容不容易想像來估計機率。","風險欄全寫「可管理」"],
+  ["Lec2","魔鬼代言人法","指定一個人專門唱反調，逼團隊面對反面證據。",""],
+  ["Lec2","辯證探詢法","提出正反兩個互斥的計畫，逼大家面對取捨。",""],
+  ["Lec2","外視法","用外部基準判斷（同類公司平均要多久、成功率多少），而不是只看自己的計畫。",""],
+  // Lec3
+  ["Lec3","價值鏈","**主要活動**：研發、生產、行銷銷售、顧客服務；**支援活動**：物料管理、人資、資訊系統、公司基礎設施。",""],
+  ["Lec3","高階生產要素","**流程知識、組織架構、智慧財產**。最可能帶來持續競爭優勢（路徑相依、受法律保護）。","對比基本要素：勞力、土地、廠房"],
+  ["Lec3","VRIO","**V** 有價值？**R** 稀有？**I** 難模仿？**O** 組織能發揮？四個都過才是持續競爭優勢。","Intel 晶圓廠 V、R、I 都過，O 失分"],
+  ["Lec3","模仿障礙五測試","①實質獨特性 ②耐久性 ③**專有性**（價值被誰拿走）④**可替代性** ⑤競爭優勢測試（要和對手比）。","專有性：NVIDIA 毛利 75% vs 廣達 5%"],
+  ["Lec3","波特五力","**新進入者威脅、買方議價力、供應商議價力、替代品威脅、既有競爭者對立**。老師說五力有標準答案，不能自己變七力。","見「五力分析」頁"],
+  ["Lec3","互補者（第 6 力）","讓你的產品更有價值的他方產品。互補者強，需求與獲利提升；波特認為要看它如何影響五力。","Google 從 HTC 的互補者變成潛在競爭者"],
+  ["Lec3","進入障礙","規模經濟、品牌忠誠、絕對成本優勢、轉換成本、資金需求、通路取得、政府管制。","全聯生鮮跨過門檻就成壁壘"],
+  ["Lec3","退出障礙","讓公司難以離開產業的因素（專用資產、高固定成本、情感、法規），使競爭更激烈。",""],
+  ["Lec3","PESTEL／總體環境","政治、經濟、社會、科技、環境、法律。不直接決定獲利，**透過改變五力**發生作用。","HTC：蘋果專利訴訟、Android 4.0"],
+  ["Lec3","策略群組","產業中商業模式相似、互為直接替代品的一群公司。**最立即的威脅來自同群組對手**。","HTC 在高階 Android 旗艦群組，正面撞蘋果三星"],
+  ["Lec3","零和 vs 正數和競爭","大家搶同一需求是零和；服務不同區隔可擴大整個產業是正數和。",""],
+  ["Lec3","產業生命週期","**胚胎期→成長期→震盪期→成熟期→衰退期**。成長期競爭程度低，震盪期價格戰、產能過剩。","2012 手機業往震盪期移動"],
+  ["Lec3","間斷均衡","產業長期穩定被劇烈創新打破，之後進入新均衡。","iPhone 2007 打破功能機均衡"],
+  // Lec4
+  ["Lec4","低成本策略","成本比對手低，能削價搶市占仍維持獲利，可吸收供應商漲價、應付要折扣的買方。","全聯 DP1：淨利只抓 2%、比同業便宜約兩成"],
+  ["Lec4","差異化策略","提供對手難以匹配的屬性（可靠、功能、設計、品牌、服務），可收較高價格。","老師：全聯做生鮮屬於**差異化**"],
+  ["Lec4","集中（聚焦）策略","只服務有限的區隔，可分為集中低成本或集中差異化。","HTC 2012 可選「鞏固長處打特定客群」"],
+  ["Lec4","卡在中間","波特：在低成本與差異化之間沒有明確擇一，策略不清楚，兩邊都輸。","全聯 DP1 的 A（翻新超市）就有此風險"],
+  ["Lec4","效率前緣","差異化與低成本各種可行位置組成的凸曲線；要到前緣需要功能層級策略與組織配合。",""],
+  ["Lec4","價值創新","透過創新把效率前緣往外推，用更低成本做出更好的差異化。","全聯生鮮＋自建物流、IKEA"],
+  ["Lec4","藍海策略 ERRC","**消除、減少**（降成本）＋**提升、創造**（增價值）。作答一定要寫到帶來什麼效益。","PChome 24h＝提升，降低消費者等待時間"],
+  ["Lec4","分散型產業","由眾多中小公司組成。原因：缺乏規模經濟、品牌忠誠度有地域性。整合手段是水平合併與連鎖。","2000 年代台灣超市業"],
+  ["Lec4","連鎖 vs 特許加盟","連鎖：品牌一致、集中決策、規模經濟，但受資源限制；加盟：擴張快、風險低，但控制權下降。","全聯不加盟，為了守住全國同價"],
+  ["Lec4","市場區隔三取向","**標準化**（忽略區隔，低成本、紅海）、**市場區隔**（多區隔多產品）、**集中化**（少數區隔，藍海）。",""],
+  ["Lec4","創新者","最早購買新技術、喜歡做實驗、技術能力高、能忍受不完美的一群人。","嘖嘖集資者"],
+  ["Lec4","早期採用者","了解新技術未來重要性、願意提早採用的人。","老師點名的專有名詞系列"],
+  ["Lec4","早期多數者","會**權衡成本效益**，重視容易使用與可靠，要靠大眾通路與大眾媒體才會買。","老師錄音親口舉例的專有名詞"],
+  ["Lec4","晚期多數者","效用已經很明顯、大多數人都接受了才購買。",""],
+  ["Lec4","落後者","無法領會新技術好處，最後才採用或不採用。",""],
+  ["Lec4","市場鴻溝","產品從早期採用者過渡到早期多數者之間的斷層；兩群人需求不同，沿用原商業模式就跨不過。","考試要用**自己的例子**（不能用 Segway、Google Glass、3D 電視）"],
+  ["Lec4","擴散加速因素","**相對優勢、複雜性、相容性、可試用性、可觀察性**。","化妝品試用包＝可試用性"],
+  ["Lec4","產品增殖","推出多種產品填滿每個利基，不給新進者留空間（進入阻絕）。",""],
+  ["Lec4","限制定價","定價低於短期利潤極大化價格、但高於進入者成本，讓新進者無利可圖。",""],
+  ["Lec4","策略承諾","用大額、不可逆的投資對外發出「我會長期留下來」的訊號，嚇阻對手。","全聯 80 億生鮮處理中心"],
+  ["Lec4","價格訊號／價格領導","用價格動作傳遞意圖／由一家公司帶頭訂價，其他跟隨。","全聯全國同價"],
+  ["Lec4","產能控制","先占產能或間接協調產能，避免產能過剩引發價格戰。",""],
+  ["Lec4","Ansoff 矩陣","**市場滲透**（現有產品×現有市場）、**產品開發**、**市場開發**、**多角化**（新產品×新市場）。","全聯經濟美學＝市場開發"],
+  ["Lec4","衰退產業四策略","**領導、利基、收割**（減少投資榨取現金）、**撤資**（出售退出）。","全聯買大潤發＝領導策略"],
+  // BCG
+  ["BCG","BCG 矩陣","用**市場成長率**（縱軸，需要多少現金）與**相對市占率**（橫軸，能產生多少現金）把事業分四象限，回答錢從哪裡收、往哪裡投。",""],
+  ["BCG","相對市占率","**本公司市占 ÷ 最大對手市占**（自己是第一就除以第二名），分界 1.0。",""],
+  ["BCG","明星 Star","高成長、高市占。要持續投資守住領先（Build/Hold），現金淨流量約為零。","HTC 2010–11 美國市場"],
+  ["BCG","金牛 Cash cow","低成長、高市占。少投資多回收（Harvest），現金拿去養其他事業。","全聯超市乾貨本業"],
+  ["BCG","問號 Question mark","高成長、低市占。挑少數加碼成明星，其餘退出；最忌每個都投一點。","全聯 PX Pay、全支付"],
+  ["BCG","老狗 Dog","低成長、低市占。縮減或退出，除非有策略價值。","大潤發單看是老狗，全聯仍買下"],
+];
+
+// ---------- 五力：四種視角 ----------
+const FORCES = [
+  {k:"rivalry", n:"既有競爭者對立", pos:"c"},
+  {k:"entry", n:"新進入者威脅", pos:"t"},
+  {k:"supplier", n:"供應商議價力", pos:"l"},
+  {k:"buyer", n:"買方議價力", pos:"r"},
+  {k:"sub", n:"替代品威脅", pos:"b"},
+  {k:"comp", n:"互補者（+1）", pos:"x"},
+];
+const FORCE_VIEWS = {
+  theory: {name:"理論", note:"老師：五力有標準答案，要用波特的定義，不能自己變七力、八力。點一個力看「什麼條件下會變強」。",
+    data:{
+      rivalry:{d:"家數多或勢均力敵、產業成長慢、**退出障礙高**、固定成本高而邊際成本低、產品同質、無法保存 → 容易打價格戰。"},
+      entry:{d:"進入障礙低時威脅大：規模經濟、品牌忠誠、絕對成本優勢、轉換成本、資金需求、通路取得、政府管制。**壓低獲利的是「威脅感」**，不必真的有人進來。"},
+      supplier:{d:"供應商少而且重要、我們不是它的重要客戶、產品獨特轉換成本高、供應商可向下整合、我們無法向上整合 → 供應商議價力強。"},
+      buyer:{d:"賣方多、買方量大、占供應商營收比重高、轉換成本低、買方可向上整合、產品標準化、買方獲利低 → 買方議價力強。"},
+      sub:{d:"替代品性價比更高、轉換成本低、顧客偏好改變、技術進步。最容易被忽略（例：領帶 vs 電動工具都是父親節禮物）。"},
+      comp:{d:"互補者強，需求與獲利提升。波特認為它不算第六力，要看它對五力的影響（可提高轉換成本，也可能消除差異）。"},
+    }},
+  htc: {name:"HTC 2012", note:"出自 Lec3 投影片。結論：最強的兩力（既有競爭者、供應商）是同一家公司三星，這是 HTC 的結構性劣勢。",
+    data:{
+      rivalry:{s:5,l:"極高",d:"蘋果 iPhone 4S/5 守高階、三星 S III 龐大行銷（廣告約 43 億美元 vs HTC 約 11 億）、華為中興靠電信商侵蝕中低階、小米網路直銷。"},
+      entry:{s:4,l:"高",d:"Android 開放＋聯發科公版方案，做手機的門檻持續降低。"},
+      supplier:{s:4,l:"高",d:"三星既是對手也供應 AMOLED 與記憶體、優先供自家；處理器依賴高通，28nm 缺貨時蘋果三星優先。2013 年「已不是供應商的一線客戶」。"},
+      buyer:{s:4,l:"高",d:"歐美電信商握有通路與補貼；消費者轉換品牌的成本極低。"},
+      sub:{s:1,l:"低",d:"智慧型手機作為行動生活中心，沒有實質替代品。"},
+      comp:{s:0,l:"轉向",d:"Google（Android）：2008 年是最緊密的夥伴（G1、Nexus One），2010 起 Nexus 交給三星、2011 買 Motorola，**從互補者變成潛在競爭者**。"},
+    }},
+  px: {name:"全聯（推論）", note:"個案沒有直接畫全聯的五力，以下依個案事實推論，作答時可以這樣寫，但要附證據。",
+    data:{
+      rivalry:{s:4,l:"高",d:"頂好、家樂福、大潤發、美廉社（2015 竄升第二大超市）、便利商店兩頭擠壓；2020 家樂福買頂好，超市與量販界線模糊，競爭更激烈。"},
+      entry:{s:2,l:"中低",d:"全聯的店數密度、自建生鮮處理中心與物流（80 億＋約百億）、採購規模都是進入障礙；但跨業態進入（量販做小店、電商外送）仍是威脅。"},
+      supplier:{s:1,l:"低",d:"全聯規模大、每月現金結帳、不收上架費並要求反映在售價；公平會附負擔、2024 年罰 2,000 萬，反映全聯對供應商議價力很強。"},
+      buyer:{s:3,l:"中",d:"個人消費者分散、單次購買量小，個別議價力低；但轉換成本極低、價格敏感，比價後隨時換店。"},
+      sub:{s:3,l:"中",d:"傳統市場與黃昏市場、量販店、便利商店、電商與外送平台都能滿足日常採買。"},
+      comp:{s:0,l:"—",d:"行動支付（PX Pay、全支付）、外送平台（Uber Eats）、自有物流讓門市變成取貨點。"},
+    }},
+  uni: {name:"統一超商", note:"老師說可能用大家熟悉的公司出題，舉例統一超商（只是範例，不是承諾）。以下依課程架構整理。",
+    data:{
+      rivalry:{s:4,l:"高",d:"全家、萊爾富、OK，以及全聯 mini、小型超市。"},
+      entry:{s:1,l:"低",d:"店點、物流與品牌都是很高的進入障礙。"},
+      supplier:{s:1,l:"低",d:"通路強勢、採購量大。"},
+      buyer:{s:2,l:"低",d:"個人消費者分散；但轉換成本也低。"},
+      sub:{s:3,l:"中",d:"超市、外送平台、電商。"},
+      comp:{s:0,l:"—",d:"行動支付、外送平台。"},
+    }},
+};
+
+// ---------- SWOT ----------
+const SWOT = {
+  px: {name:"全聯", src:"出自全聯決策點 SWOT 解析（依個案「決策當下看得到的資訊」整理）", dps:[
+    {t:"一 1998 定位", S:["接手即有 66 家現成據點，店址租金低，天生低成本","「福利中心」名稱自帶「便宜」的認知","沿用寄賣制，庫存與資金壓力低","林敏雄有建設本業現金流可長期貼補；未上市可看長期"],
+     W:["店面陰暗老舊，多在地下室或無電梯樓層","供應商信心不足，採購條件差","員工沒有業績與成本觀念","經營者是零售門外漢"],
+     O:["開放一般民眾，客群大幅擴大","量販要開車、一次大量採購，社區小量就近的低價需求沒人滿足","鄉鎮巷弄缺少現代化低價通路","供應商被量販開 3–6 個月支票，現金結帳有吸引力"],
+     T:["外商量販以規模低價搶市，已把營收壓到 127 億","頂好等現代超市品牌與體驗領先","便利商店快速擴張","長期虧損可能拖垮本業"],
+     SO:"用低租金店址與「福利中心」形象切入社區低價需求",WO:"用現金結帳與不收上架費，把供應商沒信心翻轉為願意給低價",ST:"不跟量販比店大，比「同樣便宜但更近」",WT:"必須快速展店撐起採購量 → 引出決策點二"},
+    {t:"二 2004–07 擴張", S:["已有 200 多家店，最大連鎖超市，採購量領先","低成本結構（寄賣、現金結帳、不收上架費）成熟","「便宜」的消費者認知穩固","經營者願意為長期規模接受短期虧損"],
+     W:["北部與都會據點少","以乾貨日用品為主，缺乏生鮮能力","品牌形象「便宜但簡陋」","併購整合經驗不足，內部對擴張有分歧"],
+     O:["區域超市經營困難、有意出售，可低成本取得店面與人才","萬客隆退出，量販留下空間","離島、都市巷弄仍有未滿足的低價需求","本土品牌認同可對抗外商"],
+     T:["家樂福市占約 40%，揚言在全聯旁開小店","超市業成長停滯（1.93%）","頂好也在併購與推新店型","便利商店與量販從兩頭擠壓"],
+     SO:"以規模與現金收購區域超市，整合分散產業",WO:"併購善美的、台北農產補上北部據點與生鮮人才",ST:"用「全聯先生」廣告與本土認同，在家樂福進入前強化忠誠",WT:"不加盟、不收卡，守住成本紀律"},
+    {t:"三 2006–11 生鮮", S:["約 400 家店，規模足以支撐自建生鮮中心與物流","乾貨穩定獲利，可交叉補貼","併購取得生鮮人才與技術","「便宜」的信任讓顧客願意嘗試生鮮","未上市、家族經營，耐得住多年虧損"],
+     W:["過去生鮮失敗經驗（楊聯社），品管底子薄","沒有自建物流與冷鏈","淨利只有 2%，損耗沒有緩衝","店面小、設備老舊，不適合生鮮陳列"],
+     O:["雙薪家庭增加，傳統市場時間與衛生不符需求","試賣店已證實需求（生鮮占營收 15%–30%）","生鮮提高來客頻率、帶動乾貨","對手在生鮮上規模小或不賺錢"],
+     T:["頂好 Express Fresh、量販生鮮品項完整","便利商店與量販持續擠壓","食安或品質不穩可能拖累品牌","自建物流初期不順"],
+     SO:"以規模與乾貨獲利支撐自建供應鏈，搶下傳統市場的生鮮需求",WO:"先在都市店試賣，用併購來的人才補能力再複製",ST:"生鮮也比對手便宜，形成難以追趕的成本差距",WT:"由二代負責、設專責部門控制品質風險"},
+    {t:"四 2015 七百家店後", S:["740 家店、市占約 21%，採購議價力領先","生鮮與物流中心已運作，二代店證實生鮮帶動業績","全聯先生等廣告累積知名度與創意能力","資金充足，可快速收購"],
+     W:["品牌「便宜但不體面」，年輕與都會客群滲透低","雙北據點不足，高租金區不易展店","2% 淨利下生鮮與物流成本壓低獲利","店型老舊，imart 未證實可複製"],
+     O:["超市成長高於量販（+4.5% vs +0.5%）","松青待售，可低價取得 65 家都會店","食安風波後消費者重視可信賴通路","年輕世代薪資停滯，省錢可被重新定義為精明"],
+     T:["美廉社社區小店快速追趕","便利商店搶都會小額購物","店數接近飽和，新店可能吃自己","市占越高，反壟斷審查越嚴"],
+     SO:"以資金優勢收購松青，立刻取得都會據點",WO:"以「經濟美學」把省錢重新定義為品味",ST:"以 mini 輕超市抵禦便利商店與美廉社",WT:"不減促銷、堅守低價；用新店型提高單店業績"},
+    {t:"五 2020–21 對手合併", S:["1,000 多家店、每天約 150 萬人次來客","生鮮與物流成熟，疫情期間生鮮首次獲利","900 萬以上會員、PX Pay 掌握消費數據","資金充足、未上市，能承受數位虧損"],
+     W:["缺少量販業態與大坪數店型","線上起步晚，外送每單賠錢","市占已高，併購受公平會嚴審","強勢議價可能被視為濫用市場地位"],
+     O:["歐尚與家樂福同時出售台灣事業","疫情帶動在家煮食與線上購物","大潤發有自有土地建物","超市＋量販可擴大採購規模經濟"],
+     T:["家樂福併頂好形成量販＋超市組合","momo、全家等也在競逐大潤發","公平會負擔限制定價與供應商條件","量販成長趨緩，網路持續分食"],
+     SO:"把握出售窗口買下大潤發補足業態",WO:"以大潤發大店型補上一次購足需求",ST:"以門市密度支撐小時達、分批取貨抵禦電商",WT:"避開必被擋的家樂福交易；遵守負擔條款（2024 仍被罰）"},
+  ]},
+  htc: {name:"HTC", src:"依 HTC 個案事實與 Lec3 投影片推論整理（個案沒有直接列 SWOT）", dps:[
+    {t:"一 2006 自有品牌", S:["全球最大 Windows Mobile 製造商","替不同電信商快速調整機種的工程速度","和微軟與晶片廠緊密合作","有多普達品牌在中國的經驗"],
+     W:["沒有品牌知名度與行銷經驗","營收依賴少數客戶（HP、Palm、電信商）","代工毛利薄，價值留在品牌商"],
+     O:["智慧型手機市場起飛","歐洲有沒和電信商合作的地區可先試水溫","電信商需要差異化機種"],
+     T:["做品牌＝和客戶搶消費者，客戶可能抽單","前例：宏碁分拆緯創、明基併西門子單季虧 1.55 億歐元","股價可能大跌（1,220 → 500 以下）"],
+     SO:"用工程速度推自有品牌機（HTC Touch 5 個月賣 100 萬支）",WO:"只在無合作電信商的地區先推品牌，降低衝突",ST:"雙軌並行，保住代工收入當現金流",WT:"縮小多普達收購金額（1,450 萬美元）控制風險"},
+    {t:"二 2010 面板缺貨", S:["最早押 Android，Desire、Nexus One 需求旺","工程速度快，可迅速改設計","與 Google 關係緊密"],
+     W:["關鍵零件掌握在別人手上","規模比三星小，議價力弱","Nexus One 網路直售不如預期"],
+     O:["Sony Super LCD 可快速擴產","Android 市場高速成長"],
+     T:["三星同時是供應商與對手，AMOLED 優先供自家","缺貨會錯過需求旺季"],
+     SO:"迅速改用 Sony SLCD 抓住需求 → 2010 出貨倍增到 2,467 萬支",WO:"分散供應來源，擺脫單一對手",ST:"不把出貨節奏交給對手三星",WT:"代價：與三星關係轉弱，Nexus S 改由三星做"},
+    {t:"三 2011 高峰期", S:["市值 338 億美元超越 Nokia、股價 1,300","Q3 美國出貨第一","現金充裕","Sense 介面與設計口碑"],
+     W:["零件依賴三星與高通","行銷預算遠小於三星","機種多、定位模糊"],
+     O:["有現金可以往上游鎖關鍵零件","可投資軟體、內容、雲端建立差異化","智慧型手機市場仍高速成長"],
+     T:["蘋果在 ITC 提專利訴訟","Google 買 Motorola（125 億美元），互補者變對手","Android 4.0 統一介面削弱 Sense","三星大舉行銷"],
+     SO:"用高峰期現金往上游鎖零件（C）或集中品牌行銷（B）",WO:"降低對單一供應商的依賴",ST:"買專利（ADC、S3）防禦訴訟",WT:"減少機種、集中資源。實際：高配息分紅、投資分散，錯過窗口"},
+    {t:"四 2012 專利與產品線", S:["One X 設計與工藝","高階品牌形象仍在"],
+     W:["Q4'11 淨利首次衰退","零件成本比三星高至少 10%","機海（台灣一年 14 款）","One X 國際版與美國版晶片不同，體驗不一"],
+     O:["和蘋果和解可取得確定性","全球手機市場仍在成長（主要在中低階）"],
+     T:["專利禁令讓 One X 卡在美國海關","三星 S III 145 國上市、100 天 2,000 萬支","華為、中興、小米侵蝕中低階","高通 28nm 產能不足"],
+     SO:"集中旗艦，守高階形象與毛利",WO:"與蘋果和解，10 年授權換確定性",ST:"賣一半 Beats 回收 1.5 億美元現金",WT:"不補中低價 → 規模更小、議價力更弱"},
+    {t:"五 2013 新 One", S:["新 One 鋁合金機身、BoomSound 設計口碑好","仍有品牌知名度"],
+     W:["「已不是供應商的一線客戶」，相機零件拿不到","高階主管相繼離職","UltraPixel 400 萬畫素 vs S4 1,300 萬"],
+     O:["新 One 若成功可重建品牌","可找策略夥伴取得資源"],
+     T:["S4 同期上市","三星行銷資源遠大於 HTC","市占跌到 2.89%、全球第 11"],
+     SO:"全押新 One 打代表作（數位行銷 +250%）",WO:"找策略夥伴補零件與通路",ST:"以設計差異化避開規格戰",WT:"縮小守高階先顧獲利。實際：全押，比較像加碼承諾"},
+  ]},
+};
+
+// ---------- HTC 選擇理由（個案沒有直接寫，依個案推論） ----------
+const HTC_WHY = {
+  "一":"避開與電信商、HP 正面衝突（先只在沒有合作電信商的地區推品牌），也借鏡宏碁、明基的失敗；同時保住代工收入當現金流。",
+  "二":"等三星擴產等於把出貨節奏交給對手兼供應商；需求正旺，而快速改設計正是 HTC 的強項。",
+  "三":"高峰期以為優勢會持續：用高配息分紅留才、回饋股東，投資分散在 S3、Beats、OnLive 等周邊。課堂觀點是應選 C（鎖零件）或集中 B，「資源配置最能看出真正的策略」。",
+  "四":"專利禁令已讓 One X 卡海關、營收下修，和解換確定性；集中旗艦守毛利，不做人民幣 1,000 元以下手機。",
+  "五":"周永明認為問題在「行銷做得不夠」，想用新 One 一次打出代表作；但零件拿不到、沒有退路，比較像加碼承諾。",
+};
+const PX_FRAME = {"一":"一般性策略（成本領導）、ERRC、V-P-C","二":"分散型產業、水平合併、連鎖（不加盟）、規模經濟","三":"差異化（老師答案）、效率前緣外推＝價值創新、策略承諾、進入障礙","四":"Ansoff（市場滲透＋市場開發）、市場區隔、產品增殖","五":"競爭強度、管理競爭對手、衰退產業的領導策略"};
+const HTC_FRAME = {"一":"通路衝突、垂直整合、專有性","二":"供應商議價力、關鍵資源掌握在誰手上","三":"資源配置看真正策略、VRIO（Sense 的 I 失分）、互補者變競爭者","四":"五力（供應商、對手強）、策略群組、產業生命週期","五":"加碼承諾 vs 遠見、規模與供應商優先順序、BCG 失敗序列"};
+
+
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<mark>$1</mark>").replace(/\n/g, "<br>");
+const strip = s => String(s).replace(/\*\*/g, "");
+const ul = arr => "<ul>" + arr.map(x => `<li>${md(x)}</li>`).join("") + "</ul>";
+const ol = arr => "<ol>" + arr.map(x => `<li>${md(x)}</li>`).join("") + "</ol>";
+const table = it => `<div class="tbl"><table><thead><tr>${it.header.map(h=>`<th>${md(h)}</th>`).join("")}</tr></thead><tbody>${it.rows.map(r=>"<tr>"+r.map(c=>`<td>${md(c)}</td>`).join("")+"</tr>").join("")}</tbody></table></div>`;
+const S = i => SRC[i];
+const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+const VIEWS = [
+  {id:"cases", n:"1", t:"個案分析"},
+  {id:"terms", n:"2", t:"專有名詞"},
+  {id:"forces", n:"3", t:"五力分析"},
+  {id:"swot", n:"4", t:"SWOT 分析"},
+  {id:"pxtree", n:"5", t:"全聯決策樹"},
+  {id:"htctree", n:"6", t:"HTC 決策樹"},
+  {id:"tips", n:"7", t:"備考叮嚀與補充"},
+];
+
+// ---- countdown ----
+(function(){
+  const exam = new Date(2026, 9, 27);
+  const now = new Date(); now.setHours(0,0,0,0);
+  const d = Math.round((exam - now) / 86400000);
+  $("#count").textContent = d > 0 ? `10/27 期中考・倒數 ${d} 天` : d === 0 ? "今天考試，加油" : "期中考已結束";
+})();
+
+// ---- 1. 個案分析 ----
+function viewCases(){
+  const sub = store.get("caseSub","px");
+  const tabs = [["px","全聯"],["htc","HTC"],["cmp","全聯 vs HTC"],["bcg","BCG 套用"],["uni","延伸：統一超商"]];
+  const caseCards = (it, cls, tree) => `<div class="dpgrid">${it.rows.map((r,i)=>{
+    const nm = strip(r[0]);
+    return `<details class="dp ${cls}" ${i===0?"open":""}><summary><span class="num">${nm[0]}</span><span class="ttl">${esc(nm.slice(1).trim())}<small>${esc(strip(r[3]).slice(0,40))}…</small></span><span class="chev">›</span></summary>
+    <div class="body"><div class="cell"><b>當時處境</b>${md(r[1])}</div><div class="cell"><b>可走的路</b>${md(r[2])}</div><div class="cell"><b>實際做法</b>${md(r[3])}</div><div class="cell"><b>結果與可用架構</b>${md(r[4])}</div>
+    <div class="cell"><button class="linkbtn" data-go="${tree}">到決策樹練習這一題 →</button></div></div></details>`}).join("")}</div>`;
+  let body = "";
+  if (sub==="px") body = `<div class="block px"><h3>背景</h3><p>${md(S(40).text)}</p></div>
+    <div class="block px"><h3>五個決策點（點開看細節）</h3>${caseCards(S(41),"px","pxtree")}</div>
+    <div class="block px"><h3>一句話總結</h3><p class="soft">${md(S(44).text)}</p></div>
+    <div class="block px"><h3>後來的發展與「回頭找端倪」</h3>${table(S(42))}${ul(S(43).items)}</div>`;
+  if (sub==="htc") body = `<div class="block htc"><h3>背景</h3><p>${md(S(35).text)}</p></div>
+    <div class="block htc"><h3>五個決策點（點開看細節）</h3>${caseCards(S(36),"htc","htctree")}</div>
+    <div class="block htc"><h3>一句話總結</h3><p class="soft">${md(S(39).text)}</p></div>
+    <div class="block htc"><h3>HTC 的 PESTEL（2011–2014）</h3>${ul(S(37).items)}</div>`;
+  if (sub==="cmp") body = `<div class="block th"><h3>全聯成功、HTC 失敗：用三件事比較</h3><p class="soft">Lec3 投影片原句：差別不在努力程度，在三件事：<mark>有沒有做取捨、關鍵資源掌握在誰手上、決策提前了幾年</mark>。</p>${table(S(45))}</div>
+    <div class="block th"><h3>答整合題可以加的兩句金句</h3>${ul(["**策略要回答「我放棄了什麼」**：全聯放棄裝潢、停車場、刷卡；HTC 旗艦與機海都要。","**資源配置最能看出真正的策略**：全聯的錢投在物流與生鮮；HTC 高峰期的錢在配息分紅與周邊投資。"])}</div>`;
+  if (sub==="bcg") body = `<div class="block th"><h3>BCG 四象限</h3>${table(S(30))}${ul(S(31).items)}</div>
+    <div class="two"><div class="block px"><h3>全聯：不照教科書走</h3>${ul(["**超市乾貨本業＝金牛**：市占第一、超市市場成熟，淨利 2% 但量大、現金穩定。","**生鮮（DP3）＝問號 → 全力加碼**：符合「挑一個問號全力加碼」；但生鮮的價值在提高來客頻率，單獨放進矩陣會低估它。","**大潤發量販（DP5）單看＝老狗**：BCG 建議撤資，全聯卻花 115–130 億買下，因為土地、採購綜效、防止對手坐大。","**PX Pay、全支付、小時達＝問號**：高成長但不是領導者，靠超市金牛養。"])}</div>
+    <div class="block htc"><h3>HTC：明星沒守住的失敗序列</h3>${ul(["**2010–11 美國市場＝明星**：Q3 美國出貨第一、2010 全球市占 7.1%。","**2012 投資不足 → 問號**：營收 −38%、專利禁令、零件問題，相對市占下滑。","**2013 後 → 老狗**：Q2 市占 2.89%、全球第 11。","**手上沒有金牛可以救**；VIVE 是用剩下資源押一個新的問號。"])}</div></div>
+    <p class="note">BCG 的限制要記得寫至少一項：只有兩個維度、靜態、資料要求高；也看不到事業間的綜效（全聯生鮮帶動乾貨）。</p>`;
+  if (sub==="uni") body = `<div class="block th"><h3>統一超商（老師舉例可能出題）</h3><p class="note">${md(S(49).text)}</p>${ul(S(50).items)}</div>`;
+  return `<div class="lead"><div class="eyebrow">PART 1</div><h2>個案分析</h2><p>只考全聯與 HTC（Netflix 不考）。全聯是 Lec4 事業層級的正面案例，HTC 是 Lec3 外部分析的負面案例。</p></div>
+  <div class="seg" data-seg="caseSub">${tabs.map(([k,t])=>`<button aria-pressed="${k===sub}" data-v="${k}">${t}</button>`).join("")}</div>${body}`;
+}
+
+// ---- 2. 專有名詞 ----
+let termState = {cat:"全部", q:"", quiz:false};
+function viewTerms(){
+  const known = store.get("known", {});
+  const cats = ["全部","Lec2","Lec3","Lec4","BCG"];
+  const list = TERMS.filter(t => (termState.cat==="全部"||t[0]===termState.cat) && (!termState.q || (t[1]+t[2]+t[3]).includes(termState.q)));
+  const nKnown = TERMS.filter(t=>known[t[1]]).length;
+  return `<div class="lead"><div class="eyebrow">PART 2</div><h2>專有名詞解釋</h2><p>老師說專有名詞「有上課就會知道」，例如早期多數者。開「考我模式」時定義會先遮住，點卡片才顯示；背熟的按「記住了」，進度只存在你這台裝置。</p></div>
+  <div class="tools"><input class="search" id="tsearch" type="search" placeholder="搜尋名詞或關鍵字，例如：鴻溝、ROIC" value="${esc(termState.q)}">
+  <label class="toggle"><input type="checkbox" id="tquiz" ${termState.quiz?"checked":""}> 考我模式</label>
+  <span class="small muted" style="font-variant-numeric:tabular-nums">已記住 ${nKnown} / ${TERMS.length}</span></div>
+  <div class="seg th" data-seg="tcat">${cats.map(c=>`<button aria-pressed="${c===termState.cat}" data-v="${c}">${c}</button>`).join("")}</div>
+  <div class="terms">${list.map(t=>`<div class="term ${termState.quiz?"quiz":""} ${known[t[1]]?"isknown":""}" data-term="${esc(t[1])}" tabindex="0">
+    <div class="hd"><span class="nm">${esc(t[1])}</span><span class="tag">${t[0]}</span></div>
+    <div class="df">${md(t[2])}</div>${t[3]?`<div class="ex">${md(t[3])}</div>`:""}
+    <button class="known" data-known="${esc(t[1])}">${known[t[1]]?"✓ 記住了":"記住了"}</button></div>`).join("") || `<p class="muted">找不到符合的名詞，換個關鍵字試試。</p>`}</div>`;
+}
+
+// ---- 3. 五力 ----
+let ffState = {view:"htc", f:"rivalry"};
+function viewForces(){
+  const V = FORCE_VIEWS[ffState.view];
+  const meter = d => d.s===undefined ? "" : d.s===0 ? `<div class="meter"><span style="margin-left:0">${esc(d.l)}</span></div>` : `<div class="meter">${[1,2,3,4,5].map(i=>`<i class="${i<=d.s?"on":""}"></i>`).join("")}<span>${esc(d.l)}</span></div>`;
+  const cur = V.data[ffState.f]; const curF = FORCES.find(f=>f.k===ffState.f);
+  return `<div class="lead"><div class="eyebrow">PART 3</div><h2>波特五力分析</h2><p>五力用來判斷一個產業的<mark>結構性獲利能力</mark>：五股力量愈強，產業裡的公司愈難賺錢。總體環境（PESTEL）不直接決定獲利，是透過改變五力發生作用。</p></div>
+  <div class="seg htc" data-seg="ffview">${Object.entries(FORCE_VIEWS).map(([k,v])=>`<button aria-pressed="${k===ffState.view}" data-v="${k}">${v.name}</button>`).join("")}</div>
+  <p class="note">${md(V.note)}</p>
+  <div class="ff htc">${FORCES.map(f=>`<button class="force ${f.pos}" aria-pressed="${f.k===ffState.f}" data-force="${f.k}"><span class="fn">${f.n}</span>${meter(V.data[f.k])}</button>`).join("")}</div>
+  <div class="fdetail htc"><h3 style="font-size:1.05rem;margin-bottom:6px">${curF.n}${cur.l?`｜<span style="color:var(--c)">${esc(cur.l)}</span>`:""}</h3><p>${md(cur.d)}</p></div>
+  <div class="block th"><h3>五力變強的條件（課本 5+1）</h3>${table(S(18))}</div>
+  <div class="block th"><h3>產業分析的步驟與常見錯誤</h3>${ul(S(19).items)}</div>`;
+}
+
+// ---- 4. SWOT ----
+let swState = {co:"px", dp:2};
+function viewSwot(){
+  const C = SWOT[swState.co]; const d = C.dps[swState.dp]; const cls = swState.co;
+  const q = (k,t) => `<div class="q4 ${k}"><h4><span class="L">${k}</span>${t}</h4>${ul(d[k])}</div>`;
+  return `<div class="lead"><div class="eyebrow">PART 4</div><h2>SWOT 分析</h2><p>SWOT 把<mark>內部</mark>的優勢（S）劣勢（W）和<mark>外部</mark>的機會（O）威脅（T）放在一起看，再交叉成 SO／ST／WO／WT 對應策略。它是策略規劃程序的第二、三步（外部分析找 O、T，內部分析找 S、W）。</p></div>
+  <div class="two"><div class="block th"><h3>怎麼做才不會做壞</h3>${ul(["最常見的做壞方式：**四格各填五條，然後沒有下一步**。一定要做成 SO／ST／WO／WT 對應策略。","內部與外部要用**同一個時間尺度**，而且以「決策當下看得到的資訊」為準。","S、W 要和對手比（競爭優勢測試），不是自我感覺良好。","每一條最好有證據（年份、數字），判斷不要只講感覺。"])}</div>
+  <div class="block th"><h3>TOWS 交叉策略</h3><div class="tows"><div class="h"></div><div class="h">機會 O</div><div class="h">威脅 T</div><div class="h">優勢 S</div><div><b>SO</b> 用優勢抓機會</div><div><b>ST</b> 用優勢擋威脅</div><div class="h">劣勢 W</div><div><b>WO</b> 抓機會補劣勢</div><div><b>WT</b> 降低劣勢、避開威脅</div></div></div></div>
+  <div class="seg" data-seg="swco">${Object.entries(SWOT).map(([k,v])=>`<button class="${k}" aria-pressed="${k===swState.co}" data-v="${k}">${v.name}</button>`).join("")}</div>
+  <div class="seg ${cls}" data-seg="swdp">${C.dps.map((x,i)=>`<button aria-pressed="${i===swState.dp}" data-v="${i}">${esc(x.t)}</button>`).join("")}</div>
+  <p class="small muted">${esc(C.src)}</p>
+  <div class="swot">${q("S","優勢（內部）")}${q("W","劣勢（內部）")}${q("O","機會（外部）")}${q("T","威脅（外部）")}</div>
+  <div class="block ${cls}"><h3>策略意涵（TOWS）</h3><div class="tows tows2"><div><b>SO</b> ${md(d.SO)}</div><div><b>WO</b> ${md(d.WO)}</div><div><b>ST</b> ${md(d.ST)}</div><div><b>WT</b> ${md(d.WT)}</div></div></div>`;
+}
+
+// ---- 5/6. 決策樹 ----
+function buildTree(optIdx, caseIdx, why, frame){
+  const cases = {}; S(caseIdx).rows.forEach(r=>{cases[strip(r[0])[0]] = r});
+  const dps = []; let cur = null;
+  S(optIdx).rows.forEach(r=>{
+    if (r[0]) { cur = {key:r[0][0], name:r[0], opts:[], reasons:[]}; dps.push(cur); }
+    const o = strip(r[1]);
+    if (/理由|為何/.test(o)) { cur.reasons.push([o, r[2]]); return; }
+    const chosen = /實選|實際偏向/.test(o);
+    const name = o.replace(/（實選[^）]*）|（實際偏向）/g, "").trim();
+    cur.opts.push({lt:name[0], name:name.slice(1).trim(), pro:r[2], con:r[3], chosen, tag: /實際偏向/.test(o) ? "實際偏向" : "實選"});
+  });
+  dps.forEach(d=>{ d.reasons.forEach(([l])=>{ const m = l.match(/選\s*([A-D])＋([A-D])/); if (m) d.opts.forEach(o=>{ if (o.lt===m[1]||o.lt===m[2]) o.chosen = true; }); });
+    const c = cases[d.key]; d.sit = c?c[1]:""; d.did = c?c[3]:""; d.res = c?c[4]:"";
+    if (!d.reasons.length && why[d.key]) d.reasons.push(["為什麼這樣選（依個案推論）", why[d.key]]);
+    d.frame = frame[d.key]; });
+  return dps;
+}
+let treeState = {pxtree:{quiz:false, open:{}, picked:{}, rv:{}}, htctree:{quiz:false, open:{}, picked:{}, rv:{}}};
+function viewTree(id){
+  const isPx = id==="pxtree"; const cls = isPx?"px":"htc";
+  const dps = isPx ? buildTree(47,41,{},PX_FRAME) : buildTree(48,36,HTC_WHY,HTC_FRAME);
+  const st = treeState[id];
+  const intro = isPx
+    ? "1998–2021 年，全聯每一步都守住「極致低價」，再用規模、生鮮、物流把效率前緣往外推。"
+    : "2006–2013 年，HTC 從代工轉品牌、登上高峰，再因為關鍵資源在別人手上、沒有做取捨而滑落。";
+  return `<div class="lead"><div class="eyebrow">PART ${isPx?5:6}</div><h2>${isPx?"全聯":"HTC"}決策樹</h2><p>${intro}這就是老師說的 <mark>ABC 選項題</mark>：每個選項列優缺點，再說明為什麼選它。點選項卡片看優缺點。</p></div>
+  <div class="treebar"><label class="toggle"><input type="checkbox" data-tquiz="${id}" ${st.quiz?"checked":""}> 測驗模式：先藏起實際選擇，自己選一個再揭曉</label>
+  <button class="seg-like reveal ${cls}" data-expand="${id}">${Object.keys(st.open).length?"全部收合":"全部展開優缺點"}</button></div>
+  <div class="tree ${cls} ${st.quiz?"quiz":""}">${dps.map((d,i)=>{
+    const rv = !st.quiz || st.rv[i]; const picked = st.picked[i];
+    const chosenLts = d.opts.filter(o=>o.chosen).map(o=>o.lt);
+    let verdict = "";
+    if (st.quiz && st.rv[i] && picked) verdict = chosenLts.includes(picked) ? `<p class="verdict ok">✓ 你選 ${picked}，和實際一致</p>` : `<p class="verdict no">你選 ${picked}，實際是 ${chosenLts.join("＋")}。想想差在哪裡</p>`;
+    return `<div class="node ${rv?"rv":""}"><div class="spine"><div class="dot">${esc(d.key)}</div></div><div class="content ${rv?"rv":""}">
+      <div class="qcard"><span class="yr">決策點${esc(d.key)}｜${esc(d.name.slice(1).trim())}</span><h4>${esc(d.name.slice(1).trim().replace(/^[\d–]+\s*/,""))}：該怎麼走？</h4><div class="sit">${md(d.sit)}</div></div>
+      <div class="branches">${d.opts.map(o=>`<button class="opt ${o.chosen?"chosen":""} ${st.open[i+o.lt]?"open":""} ${picked===o.lt&&st.quiz?"picked":""}" data-opt="${id}|${i}|${o.lt}">
+        <span class="badge">✓ ${o.tag}</span>
+        <span class="oh"><span class="lt">${esc(o.lt)}</span><span class="on">${md(o.name)}</span></span>
+        <span class="pc"><span class="pro"><b>優點</b> <span>${md(o.pro)}</span></span><span class="con"><b>缺點</b> <span>${md(o.con)}</span></span></span>
+        <span class="hint">${st.quiz?"點一下：選它並看優缺點":"點一下看優缺點"}</span></button>`).join("")}</div>
+      ${st.quiz && !st.rv[i] ? `<button class="reveal" data-rv="${id}|${i}">${picked?`我選 ${picked}，揭曉答案`:"揭曉答案"}</button>` : `<div class="why">${verdict}
+        ${d.reasons.map(r=>`<p><b class="k">${esc(r[0])}</b>　${md(r[1])}</p>`).join("")}
+        <p><b class="k">實際做法</b>　${md(d.did)}</p><p><b class="k">結果</b>　${md(d.res)}</p></div>`}
+    </div></div>`}).join("")}</div>`;
+}
+
+// ---- 7. 備考叮嚀 ----
+let qState = {f:"all"};
+function viewTips(){
+  const qs = SRC.filter(x=>x.kind==="q").map(x=>{const m = x.title.match(/^(★+)\s*([^.]+?)\.\s*(.*)$/s); return {stars:m?m[1]:"", id:m?m[2]:"", t:m?m[3]:x.title, grp:x.h2, pts:x.pts}});
+  const shown = qs.filter(q => qState.f==="all" || (qState.f==="3"&&q.stars.length===3) || (qState.f==="t"&&q.id.startsWith("T")) || (qState.f==="px"&&q.grp.includes("全聯")) || (qState.f==="htc"&&q.grp.includes("HTC")));
+  const lvl = n => n===3?"hot":n===2?"warm":"cool";
+  const types = S(3).items.map(s=>{const m = s.match(/^\*\*(.+?)\*\*(.*)$/s); return m?{h:m[1],b:m[2].replace(/^[。：:]/,"")}:{h:"",b:s}});
+  return `<div class="lead"><div class="eyebrow">PART 7</div><h2>備考叮嚀與補充</h2><p>根據老師課堂預告考試的兩段錄音整理。錄音是語音辨識結果，少數字句可能有誤。</p></div>
+  <div class="block th"><h3>考試形式</h3>${table(S(2))}</div>
+  <div class="block th"><h3>六種題型（老師親口舉的例子）</h3><div class="qtypes">${types.map(t=>`<div class="qtype"><b>${esc(t.h)}</b><div>${md(t.b)}</div></div>`).join("")}</div></div>
+  <div class="block th"><h3>作答要求：老師特別提醒</h3>${ul(S(5).items)}
+    <div class="chain"><span>一句結論</span><i>→</i><span>點名課程架構</span><i>→</i><span>個案證據（年份、數字）</span><i>→</i><span>推理鏈與效益</span><i>→</i><span>代價</span></div></div>
+  <div class="block px"><h3>老師示範的標準答案：全聯為什麼在這個時間點做生鮮</h3><div class="soft">${ul(S(4).items)}</div></div>
+  <div class="two"><div class="block th"><h3>市場鴻溝：定義＋原因＋自己的例子</h3>${ul(S(28).items)}</div>
+  <div class="block th"><h3>加速擴散的五個因素</h3>${table(S(29))}</div></div>
+  <div class="block th"><h3>課程金句（用上會加分）</h3>${ul(S(6).items)}</div>
+  <div class="block th"><h3>考前一週讀書建議</h3>${ol(S(78).items)}</div>
+  <div class="block th"><h3>預測考題自我測驗（點題目看答題大綱）</h3>
+    <div class="seg" data-seg="qf">${[["all","全部"],["t","老師示範題型"],["3","只看 ★★★"],["px","全聯"],["htc","HTC"]].map(([k,t])=>`<button aria-pressed="${k===qState.f}" data-v="${k}">${t}</button>`).join("")}</div>
+    <p class="small muted">★ 越多代表出題機率越高。先自己在心裡答一次，再點開對照。共 ${shown.length} 題。</p>
+    <div class="cards">${shown.map(q=>`<details class="fc ${lvl(q.stars.length)}"><summary><span class="st">${q.stars}<em>${esc(q.id)}｜${esc(q.grp.replace(/^[A-Z0-9]\.\s*/,""))}</em></span><span class="qt">${md(q.t)}</span><span class="tap">點開看答題大綱</span></summary><div class="ans"><span class="lb">答題大綱</span>${ul(q.pts)}</div></details>`).join("")}</div></div>
+  <footer>${md(S(79).text)}</footer>`;
+}
+
+// ---- router ----
+const RENDER = {cases:viewCases, terms:viewTerms, forces:viewForces, swot:viewSwot, pxtree:()=>viewTree("pxtree"), htctree:()=>viewTree("htctree"), tips:viewTips};
+let current = VIEWS.some(v=>v.id===location.hash.slice(1)) ? location.hash.slice(1) : store.get("view","cases");
+if (!RENDER[current]) current = "cases";
+function renderTabs(){ $("#tabs").innerHTML = VIEWS.map(v=>`<button role="tab" aria-selected="${v.id===current}" data-tab="${v.id}"><span class="n">${v.n}</span>${v.t}</button>`).join(""); }
+function render(keepScroll){ const y = window.scrollY; $("#main").innerHTML = `<section class="view">${RENDER[current]()}</section>`; if (keepScroll) window.scrollTo(0,y); }
+function go(id){ current = id; store.set("view", id); try{history.replaceState(null,"","#"+id)}catch(e){} renderTabs(); render(); window.scrollTo(0,0); }
+renderTabs(); render();
+
+document.addEventListener("click", e=>{
+  const t = e.target.closest("[data-tab],[data-go],[data-seg] button,[data-known],[data-force],[data-opt],[data-rv],[data-expand],.term");
+  if (!t) return;
+  if (t.dataset.tab) return go(t.dataset.tab);
+  if (t.dataset.go) return go(t.dataset.go);
+  const seg = t.parentElement && t.parentElement.dataset.seg;
+  if (seg){ const v = t.dataset.v;
+    if (seg==="caseSub") store.set("caseSub", v);
+    if (seg==="tcat") termState.cat = v;
+    if (seg==="ffview") ffState.view = v;
+    if (seg==="swco") { swState.co = v; swState.dp = Math.min(swState.dp, SWOT[v].dps.length-1); }
+    if (seg==="swdp") swState.dp = +v;
+    if (seg==="qf") qState.f = v;
+    return render(true); }
+  if (t.dataset.known){ e.stopPropagation(); const k = store.get("known",{}); k[t.dataset.known] = !k[t.dataset.known]; store.set("known",k); return render(true); }
+  if (t.dataset.force){ ffState.f = t.dataset.force; return render(true); }
+  if (t.dataset.opt){ const [id,i,lt] = t.dataset.opt.split("|"); const st = treeState[id];
+    st.open[i+lt] = !st.open[i+lt] || (st.quiz && !st.rv[i]); if (!st.open[i+lt]) delete st.open[i+lt];
+    if (st.quiz && !st.rv[i]) st.picked[i] = lt; return render(true); }
+  if (t.dataset.rv){ const [id,i] = t.dataset.rv.split("|"); treeState[id].rv[i] = true; return render(true); }
+  if (t.dataset.expand){ const id = t.dataset.expand; const st = treeState[id];
+    if (Object.keys(st.open).length) st.open = {}; else $("#main").querySelectorAll(".opt").forEach(o=>{const [,i,lt]=o.dataset.opt.split("|"); st.open[i+lt]=true});
+    return render(true); }
+  if (t.classList.contains("term") && t.classList.contains("quiz")) t.classList.toggle("show");
+});
+document.addEventListener("keydown", e=>{ if ((e.key==="Enter"||e.key===" ") && e.target.classList && e.target.classList.contains("term")) { e.preventDefault(); e.target.classList.toggle("show"); } });
+document.addEventListener("input", e=>{
+  if (e.target.id==="tsearch"){ termState.q = e.target.value.trim(); const pos = e.target.selectionStart; render(true); const s = $("#tsearch"); s.focus(); try{s.setSelectionRange(pos,pos)}catch(_){} }
+});
+document.addEventListener("change", e=>{
+  if (e.target.id==="tquiz"){ termState.quiz = e.target.checked; render(true); }
+  if (e.target.dataset.tquiz){ const st = treeState[e.target.dataset.tquiz]; st.quiz = e.target.checked; st.rv = {}; st.picked = {}; st.open = {}; render(true); }
+});
+</script>
+
+</body></html>
