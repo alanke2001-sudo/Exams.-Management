@@ -199,6 +199,36 @@ td:first-child{font-weight:500}
 .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
 .two>*{min-width:0}
 footer{color:var(--muted);font-size:.82rem;padding-top:20px;border-top:1px solid var(--line)}
+
+/* V-P-C */
+.vpc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.vbars{display:flex;gap:18px;justify-content:center;align-items:flex-end}
+.vcol{display:grid;gap:8px;justify-items:center;width:150px;max-width:45%}
+.vstack{width:100%;display:flex;flex-direction:column;justify-content:flex-end;border-bottom:2px solid var(--muted)}
+.vseg{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;line-height:1.25;font-size:.8rem;transition:height .2s;overflow:hidden}
+.vseg b{font-family:var(--mono);font-size:.9rem}
+.vseg.cs{background:var(--htc-soft);color:var(--htc);border-radius:8px 8px 0 0}
+.vseg.pf{background:var(--good-soft);color:var(--good)}
+.vseg.co{background:var(--sunk);color:var(--muted)}
+.vlab{text-align:center;font-weight:700;font-size:.9rem;line-height:1.4}
+.vlab small{font-weight:400;color:var(--muted);font-family:var(--mono);font-size:.75rem}
+.vctl{display:grid;gap:12px;min-width:0}
+.sl{display:grid;gap:2px}
+.sl span{display:flex;justify-content:space-between;font-weight:700;font-size:.92rem}
+.sl b{font-family:var(--mono);color:var(--theory)}
+.sl input{width:100%;accent-color:var(--theory)}
+.vsum{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vsum>div{background:var(--sunk);border-radius:8px;padding:8px 10px;display:grid;font-variant-numeric:tabular-nums}
+.vsum span{font-size:.78rem;color:var(--muted)} .vsum b{font-family:var(--mono);font-size:1.3rem} .vsum small{font-size:.75rem;color:var(--muted)}
+.roic{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;overflow-x:auto}
+.rbr{display:grid;gap:12px;border-left:2px solid var(--line);padding-left:14px}
+.rgrp{display:grid;grid-template-columns:minmax(140px,auto) 1fr;gap:12px;align-items:center}
+.rn{background:var(--theory-soft);border-radius:8px;padding:8px 12px;text-align:center;font-weight:700;font-size:.92rem;line-height:1.4}
+.rn small{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+.rn.root b{color:var(--theory);font-family:var(--mono)}
+.rleaf{display:grid;gap:6px}
+.rleaf span{background:var(--sunk);border-radius:6px;padding:4px 10px;font-size:.85rem}
+@media (max-width:640px){.vpc{grid-template-columns:1fr}.roic{grid-template-columns:1fr}.rbr{border-left:none;padding-left:0}.rgrp{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -415,6 +445,7 @@ const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(
 const VIEWS = [
   {id:"cases", n:"1", t:"個案分析"},
   {id:"terms", n:"2", t:"專有名詞"},
+  {id:"vpc", n:"2+", t:"價值・價格・成本"},
   {id:"forces", n:"3", t:"五力分析"},
   {id:"swot", n:"4", t:"SWOT 分析"},
   {id:"pxtree", n:"5", t:"全聯決策樹"},
@@ -475,6 +506,68 @@ function viewTerms(){
     <div class="hd"><span class="nm">${esc(t[1])}</span><span class="tag">${t[0]}</span></div>
     <div class="df">${md(t[2])}</div>${t[3]?`<div class="ex">${md(t[3])}</div>`:""}
     <button class="known" data-known="${esc(t[1])}">${known[t[1]]?"✓ 記住了":"記住了"}</button></div>`).join("") || `<p class="muted">找不到符合的名詞，換個關鍵字試試。</p>`}</div>`;
+}
+
+// ---- 價值創造 V-P-C ----
+const VPC_PRESETS = [
+  {k:"base", n:"初始狀態", v:[100,70,45], d:"顧客心中的價值 V＝100，售價 P＝70，成本 C＝45。顧客得到 30 的消費者剩餘，公司賺 25。"},
+  {k:"up", n:"方案一：提高價格反映價值", v:[120,95,55], d:"先把效用從 U 提高到 V*（例如更好的設計、品質），成本也跟著升到 C₁，再把價格提高到 P₁。公司每單位利潤變大，顧客剩餘變小，適合差異化。"},
+  {k:"down", n:"方案二：降價擴大需求", v:[120,60,30], d:"同樣提高效用到 V*，但把價格降到 P₂。顧客剩餘大增 → 需求擴大 → 產量增加使單位成本降到 C₂（規模經濟），利潤率不一定變差。"},
+  {k:"cut", n:"只降價、不動 V 或 C", v:[100,50,45], d:"Lec2：只降價不動 V 或 C，等於把價值讓給客戶。總價值 V－C 沒變，公司利潤從 25 掉到 5，只是重新分餅。"},
+  {k:"px", n:"全聯：壓 C、再降 P", v:[90,52,50], d:"不裝潢、不收上架費、不刷卡、巷弄低租金把 C 壓到最低，再把 P 定得比同業低約兩成：P－C 很薄（淨利 2%），V－P 很大 → 來客多、規模大，靠週轉率撐 ROIC。"},
+  {k:"htc", n:"HTC 2012：C 高、V 被追平", v:[85,70,66], d:"零件成本比三星高至少 10%（C 高）；Android 4.0 讓 Sense 不再獨特、三星行銷聲量大（V 相對下降）；P 守高階不降。結果 P－C 被兩頭擠壓。"},
+];
+let vpcState = {v:[100,70,45], k:"base"};
+function vpcBar(v, label, id){
+  const [V,P,C] = v, H = 280, s = H/130;
+  const seg = (h,cls,txt,sub) => `<div class="vseg ${cls}" style="height:${Math.max(h*s,0)}px">${h>=12?`<b>${txt}</b><span>${sub} = ${h}</span>`:h>=5?`<span>${txt} = ${h}</span>`:""}</div>`;
+  return `<div class="vcol" ${id?`id="${id}"`:""}><div class="vstack" style="height:${H}px">${seg(V-P,"cs","V－P","消費者剩餘")}${seg(P-C,"pf","P－C","利潤")}${seg(C,"co","C","成本")}</div><div class="vlab">${label}<br><small>V ${V}｜P ${P}｜C ${C}</small></div></div>`;
+}
+function vpcSummary(v){
+  const [V,P,C] = v, b = VPC_PRESETS[0].v;
+  const d = (x,y) => { const z = x-y; return z===0 ? "持平" : (z>0?"＋":"－")+Math.abs(z); };
+  return `<div class="vsum"><div><span>總價值 V－C</span><b>${V-C}</b><small>vs 初始 ${d(V-C,b[0]-b[2])}</small></div><div><span>顧客拿到 V－P</span><b>${V-P}</b><small>vs 初始 ${d(V-P,b[0]-b[1])}</small></div><div><span>公司拿到 P－C</span><b>${P-C}</b><small>vs 初始 ${d(P-C,b[1]-b[2])}</small></div><div><span>利潤率 (P－C)/P</span><b>${P?Math.round((P-C)/P*100):0}%</b><small>初始 ${Math.round((b[1]-b[2])/b[1]*100)}%</small></div></div>`;
+}
+function viewVpc(){
+  const v = vpcState.v; const pre = VPC_PRESETS.find(p=>p.k===vpcState.k);
+  return `<div class="lead"><div class="eyebrow">PART 2+</div><h2>價值、價格與成本（V－P－C）</h2><p>Lec2〈價值、價格與成本〉與 Lec3〈每單位的價值創造〉〈價值創造與訂價選擇〉〈獲利能力驅動因子〉的內容。一句話：<mark>差異化是把 V 往上推，低成本是把 C 往下壓，兩條路都在把 V－C 撐大</mark>；P 決定這塊餅怎麼分給顧客和公司。</p></div>
+  <div class="two"><div class="block th"><h3>每單位的價值創造</h3>
+    <div class="tbl"><table style="min-width:0"><tbody>
+    <tr><td><b>V</b></td><td>對消費者的價值效用（顧客心中覺得值多少）</td></tr>
+    <tr><td><b>P</b></td><td>價格</td></tr>
+    <tr><td><b>C</b></td><td>生產成本（每單位，含資本的成本）</td></tr>
+    <tr><td><b>V－P</b></td><td><mark>消費者剩餘</mark>：顧客的好處</td></tr>
+    <tr><td><b>P－C</b></td><td><mark>利潤</mark>：公司的好處</td></tr>
+    <tr><td><b>V－C</b></td><td><mark>所創造的價值</mark>：這筆生意的總價值，競爭決定怎麼分</td></tr></tbody></table></div></div>
+  <div class="block th"><h3>為什麼價格通常低於 V</h3>${ul(["**消費者剩餘**：顧客的評價高於實付價格的那一段。","**顧客保留價格不同**：每位顧客對產品的價值評估不一樣，公司只能訂一個價格。","**競爭對手**：對手的存在壓低公司能收的價格。","結論：**顧客獲得的效用愈高，公司的訂價空間愈大。**"])}
+    <h3 style="margin-top:6px">經理人要掌握的三組關係</h3>${ul(["價值、訂價、需求與成本的動態關係（revenue management）","價值創造與訂價決策對需求的影響（yield management）","產量增加如何改變單位成本（operations management）","三件事分屬不同部門，但決定同一個數字：**每單位賺多少**。"])}</div></div>
+  <div class="block th"><h3>動手試試：拖拉 V、P、C，看餅怎麼分</h3>
+    <div class="seg" data-seg="vpc">${VPC_PRESETS.map(p=>`<button aria-pressed="${p.k===vpcState.k}" data-v="${p.k}">${p.n}</button>`).join("")}</div>
+    <p class="soft small" id="vpcdesc">${pre?md(pre.d):"自訂數字：比較右邊長條和初始狀態，看是誰多拿、誰少拿。"}</p>
+    <div class="vpc"><div class="vbars">${vpcBar(VPC_PRESETS[0].v,"初始狀態")}${vpcBar(v,pre&&pre.k!=="base"?pre.n.split("：")[0]:"你的方案","vcur")}</div>
+    <div class="vctl">${["V 顧客價值","P 價格","C 成本"].map((l,i)=>`<label class="sl"><span>${l}<b id="vval${i}">${v[i]}</b></span><input type="range" id="vpc${i}" min="0" max="130" value="${v[i]}"></label>`).join("")}
+    <p class="small muted">規則：C ≤ P ≤ V（顧客不會付超過心中價值的價格；長期低於成本賣就會倒）。數字是示意。</p><div id="vsum">${vpcSummary(v)}</div></div></div></div>
+  <div class="block th"><h3>價值創造與訂價選擇（Lec3 投影片）</h3>${ul(["從顧客觀點把效用從 U 提高到 V* 之後，公司多出兩種訂價選擇：","**方案一：提高價格以反映價值**（P₀ → P₁）。成本也可能升高（C₀ → C₁），但每單位利潤 P－C 變大，顧客剩餘變小。→ 差異化的典型做法。","**方案二：降低售價以擴大需求**（P₀ → P₂）。顧客剩餘 V－P 大增、需求擴大，產量增加讓單位成本下降（C₀ → C₂），靠量賺錢。→ 低成本／規模經濟的典型做法。","上面互動圖的兩個預設方案就是在模擬這張投影片。"])}</div>
+  <div class="block th"><h3>獲利能力驅動因子：ROIC 拆解</h3>
+    <div class="roic"><div class="rn root">投入資本報酬率<br><b>ROIC</b></div>
+      <div class="rbr"><div class="rgrp"><div class="rn">銷售報酬率<small>淨利／銷售額</small></div><div class="rleaf"><span>銷貨成本／銷售額 COGS/Sales</span><span>管銷費用／銷售額 SG&amp;A/Sales</span><span>研發費用／銷售額 R&amp;D/Sales</span></div></div>
+      <div class="rgrp"><div class="rn">資本週轉率<small>銷售額／投入資本</small></div><div class="rleaf"><span>營運資金／銷售額 Working capital/Sales</span><span>財產、廠房及設備／銷售額 PPE/Sales</span></div></div></div></div>
+    ${ul(["**差異化主要動第一段**（客戶願意付溢價 → 銷售報酬率高）；**低成本兩段都動**（壓低單位成本，同樣的產能做出更多營收）。","拆開的好處是能定位問題：ROIC 掉下來，是**價格守不住**，還是**資產養太多**。","課堂例：NVIDIA CUDA 動第一段（客戶為相容性付溢價）；把製造交給台積電，第二段也好看。"])}</div>
+  <div class="two"><div class="block px"><h3>套用到全聯</h3>${ul(["**壓 C**：不收上架費且要求反映在售價、無裝潢無停車場、不刷卡（省 3–5% 手續費）、巷弄低租金、後來自建物流。","**降 P**：比同業便宜約兩成、全國同價，把省下的成本讓給顧客 → **V－P 很大**，形成「最便宜」的信任。","**P－C 很薄**：淨利只抓 2%，靠來客量與**資本週轉率**（寄賣、現金結帳換好條件、高週轉）撐 ROIC。","**生鮮推 V**：品類完整、天天來買，同時便宜賣 → 同時推 V、壓 C ＝ 把效率前緣往外推（價值創新）。"])}</div>
+  <div class="block htc"><h3>套用到 HTC</h3>${ul(["**C 偏高**：零件成本比三星高至少 10%，又不是供應商一線客戶，規模經濟不如對手。","**V 被追平**：Android 4.0 統一介面讓 Sense 不再獨特；三星廣告約 43 億美元 vs HTC 約 11 億，顧客心中的 V 相對下降。","**P 守高階**：不做人民幣 1,000 元以下手機，P 降不下來又撐不上去。","結果 **P－C 被兩頭擠壓**：2012 營收 −38%、2013 年淨損 13.2 億。"])}</div></div>
+  <div class="block th"><h3>考試怎麼寫</h3><p class="note">遇到「低成本／差異化屬於哪一種」「為什麼這樣訂價」的題目，可以補一句 V－P－C：說清楚這個決策動的是 V、P 還是 C，誰拿到多出來的價值（顧客的 V－P 還是公司的 P－C），最後帶到效益。例：全聯生鮮屬於差異化，因為它把 V 往上推（品類完整、天天來），同時靠自建物流壓 C，所以 P 還能維持低價。</p></div>`;
+}
+function vpcLive(i, val){
+  const v = vpcState.v.slice(); v[i] = val;
+  if (i===0){ v[1] = Math.min(v[1], v[0]); v[2] = Math.min(v[2], v[1]); }
+  if (i===1){ v[1] = Math.min(v[1], v[0]); v[2] = Math.min(v[2], v[1]); }
+  if (i===2){ v[2] = Math.min(v[2], v[1]); }
+  vpcState.v = v; vpcState.k = "";
+  [0,1,2].forEach(j=>{ const el = $("#vpc"+j); if (el && +el.value!==v[j]) el.value = v[j]; $("#vval"+j).textContent = v[j]; });
+  $("#vcur").outerHTML = vpcBar(v, "你的方案", "vcur");
+  $("#vsum").innerHTML = vpcSummary(v);
+  $("#vpcdesc").textContent = "自訂數字：比較右邊長條和初始狀態，看是誰多拿、誰少拿。";
+  document.querySelectorAll('[data-seg="vpc"] button').forEach(b=>b.setAttribute("aria-pressed","false"));
 }
 
 // ---- 3. 五力 ----
@@ -579,7 +672,7 @@ function viewTips(){
 }
 
 // ---- router ----
-const RENDER = {cases:viewCases, terms:viewTerms, forces:viewForces, swot:viewSwot, pxtree:()=>viewTree("pxtree"), htctree:()=>viewTree("htctree"), tips:viewTips};
+const RENDER = {cases:viewCases, terms:viewTerms, vpc:viewVpc, forces:viewForces, swot:viewSwot, pxtree:()=>viewTree("pxtree"), htctree:()=>viewTree("htctree"), tips:viewTips};
 let current = VIEWS.some(v=>v.id===location.hash.slice(1)) ? location.hash.slice(1) : store.get("view","cases");
 if (!RENDER[current]) current = "cases";
 function renderTabs(){ $("#tabs").innerHTML = VIEWS.map(v=>`<button role="tab" aria-selected="${v.id===current}" data-tab="${v.id}"><span class="n">${v.n}</span>${v.t}</button>`).join(""); }
@@ -600,6 +693,7 @@ document.addEventListener("click", e=>{
     if (seg==="swco") { swState.co = v; swState.dp = Math.min(swState.dp, SWOT[v].dps.length-1); }
     if (seg==="swdp") swState.dp = +v;
     if (seg==="qf") qState.f = v;
+    if (seg==="vpc") { vpcState.k = v; vpcState.v = VPC_PRESETS.find(p=>p.k===v).v.slice(); }
     return render(true); }
   if (t.dataset.known){ e.stopPropagation(); const k = store.get("known",{}); k[t.dataset.known] = !k[t.dataset.known]; store.set("known",k); return render(true); }
   if (t.dataset.force){ ffState.f = t.dataset.force; return render(true); }
@@ -614,6 +708,7 @@ document.addEventListener("click", e=>{
 });
 document.addEventListener("keydown", e=>{ if ((e.key==="Enter"||e.key===" ") && e.target.classList && e.target.classList.contains("term")) { e.preventDefault(); e.target.classList.toggle("show"); } });
 document.addEventListener("input", e=>{
+  const m = e.target.id && e.target.id.match(/^vpc(\d)$/); if (m) return vpcLive(+m[1], +e.target.value);
   if (e.target.id==="tsearch"){ termState.q = e.target.value.trim(); const pos = e.target.selectionStart; render(true); const s = $("#tsearch"); s.focus(); try{s.setSelectionRange(pos,pos)}catch(_){} }
 });
 document.addEventListener("change", e=>{
