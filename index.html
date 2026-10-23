@@ -230,6 +230,33 @@ footer{color:var(--muted);font-size:.82rem;padding-top:20px;border-top:1px solid
 .rleaf{display:grid;gap:6px}
 .rleaf span{background:var(--sunk);border-radius:6px;padding:4px 10px;font-size:.85rem}
 @media (max-width:640px){.vpc{grid-template-columns:1fr}.roic{grid-template-columns:1fr}.rbr{border-left:none;padding-left:0}.rgrp{grid-template-columns:1fr}}
+
+/* sprint */
+.sptools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.spprog{font-family:var(--mono);font-size:1.1rem;margin-right:auto;font-variant-numeric:tabular-nums}
+.spprog span{font-family:var(--body);font-size:.85rem;color:var(--muted);margin-left:10px}
+.spdots{display:flex;flex-wrap:wrap;gap:6px}
+.spdot{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-family:var(--mono);font-size:.85rem}
+.spdot.ok{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.spdot.re{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.spdot.cur{outline:3px solid var(--theory);outline-offset:1px}
+.spcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:16px}
+.sphead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.85rem}
+.sppart{font-weight:700;color:var(--theory)} .sppts{font-family:var(--mono);color:var(--muted)}
+.spq{font-family:var(--display);font-size:1.2rem;line-height:1.6;font-weight:700}
+.spstage{border-top:1px dashed var(--line);padding-top:12px;display:grid;gap:10px}
+.splab{font-size:.78rem;letter-spacing:.1em;font-weight:700;color:var(--muted)}
+.spstage.open .splab{color:var(--theory)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{background:var(--mark);color:var(--mark-ink);padding:3px 12px;border-radius:99px;font-weight:700;font-size:.92rem}
+.mnemo{background:var(--theory-soft);border-radius:8px;padding:8px 12px;font-size:.95rem}
+.mnemo b{color:var(--theory);margin-right:10px}
+.spbtn{justify-self:start;border:1.5px solid var(--theory);background:var(--theory);color:var(--bg);font-weight:700;border-radius:99px;padding:6px 18px}
+.spbtn.ghost{background:var(--surface);color:var(--theory)}
+.spbtn.ok{background:var(--surface);border-color:var(--good);color:var(--good)} .spbtn.ok.on{background:var(--good);color:var(--bg)}
+.spbtn.re{background:var(--surface);border-color:var(--bad);color:var(--bad)} .spbtn.re.on{background:var(--bad);color:var(--bg)}
+.sprate{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.92rem}
+.spnav{display:flex;justify-content:space-between;gap:10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -237,7 +264,7 @@ footer{color:var(--muted);font-size:.82rem;padding-top:20px;border-top:1px solid
   <div class="wrap">
     <div class="bar">
       <div class="brand">策略管理期中考複習站<small>Lec1–4・全聯・HTC</small></div>
-      <div class="ver" title="版本與修正時間">v1.05｜修正於 2026/10/22 09:44</div>
+      <div class="ver" title="版本與修正時間">v1.06｜修正於 2026/10/23 19:05</div>
       <div class="count" id="count"></div>
     </div>
     <nav class="tabs" role="tablist" id="tabs"></nav>
@@ -477,6 +504,59 @@ const EXTRA_QS = [
    ["**市場滲透**（現有產品×現有市場）：加密展店、收購松青、會員福利卡。","**產品開發**（新產品×現有市場）：生鮮、熟食、白木屋麵包、自有品牌。","**市場開發**（現有產品×新市場）：經濟美學吸引年輕客、mini 輕超市進雙北商圈、線上小時達。","**多角化**（新產品×新市場）：全支付、收購大潤發跨入量販。"]],
 ];
 
+// ---------- 考前模擬衝刺問答：題目 → 提示（關鍵字＋口訣）→ 推測合理答案 ----------
+// [部分, 配分, 題目, 關鍵字[], 口訣, 答案[]]
+const SPRINT = [
+  ["一、決策點 ABC 題",15,"全聯 2008 年約 400 家店，考慮生鮮：A 不做、B 做但照行情定價、C 也便宜賣並自建處理中心與物流。請分別說明優缺點，並說明為什麼選 C。",
+   ["來客頻率","最便宜定位","進入障礙","80 億＋百億","日本先例","黃昏市場"],"「頻・定・壁・錢・日・市」：頻率、定位、壁壘、錢夠、日本、市場習慣",
+   ["A 不做：優＝守住低成本不虧；缺＝缺日常品項、來客頻率低，顧客流向頂好、量販、傳統市場。","B 照行情：優＝生鮮毛利補乾貨；缺＝破壞「全聯最便宜」的定位，顧客心智不一致。","C 便宜賣＋自建：優＝提高**來客頻率**、和對手拉開差距、跨過門檻成**進入障礙**；缺＝生鮮中心 80 億＋物流約百億、虧十多年。","選 C：已有規模與資本 → 承擔得起；併購善美的有生鮮技術 → 做得到；**日本先例**、台灣人去不了黃昏市場 → 不做別人也會做。"]],
+  ["一、決策點 ABC 題",15,"全聯 1998 年接手 66 家老店：A 翻新成現代超市、B 店面簡單＋比量販還便宜＋靠展店撐採購量、C 先收縮。請說明優缺點與選 B 的理由。",
+   ["卡在中間","寄賣","不收上架費","淨利 2%","建設本業輸血","八折"],"「舊店變武器」：把破店的弱點變成低成本的武器",
+   ["A 翻新：優＝符合期待、毛利高；缺＝翻新資本大、店在地下室，正面撞頂好 → **卡在中間**。","B 低價展店：優＝寄賣、不收上架費、低租金的**既有低成本結構**，建立最便宜心智；缺＝淨利 2% 需極大量，前 5–8 年虧損。","C 收縮：優＝止血；缺＝採購量更小、議價力更弱、違背不裁員承諾。","選 B：唯一能贏的資源是低成本 → 只有比量販便宜才有生路 → 林敏雄有建設本業現金撐虧損。2003 年營收 178 億超過頂好。"]],
+  ["一、決策點 ABC 題",15,"全聯 2004–07 年擴張：A 自己展店、B 併購區域超市、C 開放加盟、D 停在現有規模。請說明各選項的優缺點，以及為何選 A＋B、不選加盟。",
+   ["分散型產業","水平合併","全國同價","控制權","善美的","規模經濟"],"「散就併，併要直」：分散產業就去併購，併完要直營",
+   ["A 自展：控制強、全國同價，但慢。B 併購：一次取得店面人員、**善美的的生鮮技術**、消滅地區對手，但整合成本高。","C 加盟：擴張快、資本輕，但難守**全國同價**與成本紀律，加盟主要利潤會和低價衝突。D 停下：短期獲利好，但家樂福會先整合市場。","理由：超市業是**分散型產業**，誰先整合誰拿到**規模經濟**；全國同價需要直營控制，所以不加盟。","結果：2008 年 400 家、營收約 400 億超過大潤發。"]],
+  ["一、決策點 ABC 題",15,"HTC 2006 年考慮自有品牌：A 專心代工、B 全面改做品牌、C 雙軌並行。請說明優缺點與選 C 的理由。",
+   ["通路衝突","客戶抽單","宏碁、明基前例","專有性","HTC Touch"],"「先試水、不翻臉」：先在沒有合作電信商的地區試品牌",
+   ["A 代工：不和客戶衝突、營收穩；但毛利薄，價值被品牌商拿走（**專有性**低）。","B 全面品牌：取得品牌溢價；但客戶抽單、行銷資源不足，有宏碁分拆、明基併西門子虧損前例。","C 雙軌：避開**通路衝突**、保住代工現金流、逐步建品牌；缺點是品牌累積慢、資源分兩邊。","選 C：先在無合作電信商地區推品牌降低衝突 → HTC Touch 5 個月賣 100 萬支。"]],
+  ["一、決策點 ABC 題",15,"HTC 2013 年面對困境：A 全押新 One、B 補中低價拉量、C 找策略夥伴、D 縮小守高階。請說明優缺點，並評論 HTC 選 A 是遠見還是加碼承諾。",
+   ["一線客戶","零件拿不到","行銷 +250%","沒有退路","三個判準"],"「推、權、反」：可推翻條件、保留選擇權、找反面證據",
+   ["A 全押：資源集中打代表作；但零件拿不到、一次大賭沒有退路。B 拉量：回升供應商重視，但品牌稀釋。","C 夥伴：取得資源通路，但失去自主權。D 守高階：先顧獲利，但規模更小，更不是一線客戶。","判準：①講不講得出可被推翻的條件 ②是否保留選擇權 ③有沒有找反面證據。","HTC 三項都沒有（零件已拿不到、高層離職仍全押）→ 比較像**加碼承諾**。對照全聯生鮮：小步試賣、有中間產出 → 遠見。"]],
+  ["二、理論說明題",10,"全聯做生鮮，以 Porter 的低成本／差異化來看屬於哪一種？為什麼選在這個時間點？",
+   ["差異化","規模與資本","併購技術","拉開差距","日本先例","消費習慣"],"「規・技・距・日・習」",
+   ["屬於**差異化**：品類完整、新鮮、天天來買（把 V 往上推），價格仍維持低價。","時間點：①規模已大、有資本 → 風險承受得起；②併購帶來生鮮技術；③生鮮門檻高，跨過就成壁壘、拉開差距；④日本有先例、台灣消費習慣改變，不做別人也會做。"]],
+  ["二、理論說明題",10,"請說明波特五力的內容，並分析 HTC 在 2012 年面臨的五力狀況。",
+   ["對立極高","新進者高","替代品低","供應商高","買方高","三星同時是對手與供應商"],"「新・買・供・替・對」五力；HTC 只有替代品低",
+   ["既有競爭者**極高**：蘋果守高階、三星行銷大、華為中興小米侵蝕中低階。","新進入者**高**：Android 開放＋聯發科公版降低門檻。替代品**低**：手機沒有實質替代。","供應商**高**：三星供面板記憶體又是對手、高通缺貨時優先蘋果三星。買方**高**：電信商握通路補貼、消費者轉換成本低。","互補者 Google 從夥伴變潛在競爭者。結論：最強兩力是同一家公司三星 → 結構性劣勢。"]],
+  ["二、理論說明題",10,"請用 V－P－C 解釋「差異化」與「低成本」策略的差異，並說明「只降價」為何不是好策略。",
+   ["V－P 消費者剩餘","P－C 利潤","V－C 創造價值","推 V","壓 C"],"「差推 V、低壓 C、只降 P 是送錢」",
+   ["V＝顧客心中的價值、P＝價格、C＝成本；V－P 是消費者剩餘、P－C 是利潤、V－C 是創造的總價值。","差異化＝把 **V 往上推**（顧客願付溢價）；低成本＝把 **C 往下壓**。兩者都在撐大 V－C。","只降價不動 V 或 C：總價值沒變，只是把利潤讓給顧客，對手跟進就變價格戰。","全聯是先壓 C 才降 P，所以淨利 2% 仍能持續。"]],
+  ["二、理論說明題",10,"解釋專有名詞：早期多數者，並說明讓消費者更快進入多數的五個擴散加速因素。",
+   ["權衡成本效益","大眾通路","相對優勢","複雜性","相容性","可試用性","可觀察性"],"「相・複・容・試・觀」",
+   ["早期多數者：會**權衡成本效益**，重視容易使用與可靠，需要大眾通路與大眾媒體廣告。","相對優勢：比替代品好（串流取代實體出租）。複雜性：愈簡單擴散愈快。","相容性：符合既有習慣與認知（Apple 介面）。可試用性：試用包、訂閱首月免費。","可觀察性：看得到別人在用、有口碑（網紅、意見領袖）。"]],
+  ["二、理論說明題",10,"請說明 BCG 矩陣的四個象限與策略，並用它分析 HTC 2010–2013 年的變化。",
+   ["市場成長率","相對市占","明星","問號","老狗","沒有金牛"],"「星守、牛收、問挑、狗退」",
+   ["明星（高成長高市占）＝持續投資；金牛（低成長高市占）＝收割養其他事業；問號（高成長低市占）＝挑少數加碼；老狗＝縮減退出。相對市占＝自己÷最大對手。","HTC：2010–11 美國市場**明星** → 2012 投資不足、相對市占下滑成**問號** → 2013 後市占 2.89% 成**老狗**。","關鍵：明星沒守住的失敗序列，而且手上**沒有金牛**可以救。","限制：只有兩個維度、靜態、看不到綜效。"]],
+  ["二、理論說明題",10,"請用 ERRC 分析全聯，並寫出每一項帶來的效益。",
+   ["消除上架費、刷卡、停車場","減少租金、裝潢","提升價格優勢","創造全國同價信任"],"「消・減降成本；提・創增價值」，每項都要寫效益",
+   ["**消除**上架費、刷卡、停車場、裝潢 → 省下成本，售價更低。","**減少**店租（巷弄鄉鎮）、毛利（淨利 2%）→ 成本結構比同業低。","**提升**價格優勢（約八折）、社區便利 → 降低顧客採買花費與移動時間。","**創造**全國一致低價的信任、經濟美學品牌 → 顧客不用比價就願意來。"]],
+  ["三、自己舉例題",10,"什麼是市場鴻溝？為什麼會發生？請舉一個上課沒講過的例子（不可用 Segway、Google Glass、3D 電視）。",
+   ["早期採用者 → 早期多數者","需求不同","Vision Pro","VR／HTC VIVE","氫能車"],"「例子 → 卡在誰 → 哪個因素跨不過」",
+   ["定義：產品從早期採用者過渡到早期多數者之間的斷層，很多產品在這裡停滯或退出。","原因：早期採用者願忍受高價與不完美；早期多數者要好用、可靠、價格合理、別人都在用 → 沿用原商業模式跨不過。","例：**Apple Vision Pro**，約 3,500 美元、笨重、內容少 → 相對優勢不足、複雜性高；或 **HTC VIVE**、**氫能車**（加氫站少＝缺互補品）。","怎麼跨：降價、簡化、提供試用、做口碑。"]],
+  ["三、自己舉例題",10,"以統一超商為例，說明它採取哪一種一般性策略，並用 Ansoff 矩陣分析它的成長方式。",
+   ["差異化（便利）","店點密度","OPEN POINT","鮮食、自有品牌","收購家樂福"],"「便利就是差異化」；Ansoff：滲・產・開・多",
+   ["一般性策略：**差異化**，店多、24 小時、繳費取貨鮮食咖啡，顧客願意為便利付較高價格。","市場滲透：OPEN POINT 會員、加密店點。產品開發：鮮食、自有品牌、健康產品。","市場開發：與星巴克、康是美的複合店吸引新客群。多角化：收購家樂福跨入量販與超市。","記得寫效益：店點密度 → 降低顧客的移動時間。"]],
+  ["三、自己舉例題",10,"請自己舉一家公司為例，說明「卡在中間」的風險。",
+   ["低成本 vs 差異化","擇一","價格比不過、價值也比不過"],"「兩頭都要，兩頭都輸」",
+   ["卡在中間：沒有明確在低成本或差異化擇一，價格比不過低價對手、價值也比不過差異化對手。","例（擇一）：中價位連鎖餐廳，價格比不過平價店、品質體驗比不過高價餐廳；或某國產手機品牌高階拼不過蘋果三星、低價拼不過小米。","課堂連結：全聯 DP1 若選 A 翻新，就可能卡在中間；HTC 2012 旗艦與機海並行也有此風險。","反例：全聯生鮮靠自建物流把效率前緣往外推，不是卡在中間。"]],
+  ["四、整合比較題",15,"為什麼全聯成功、HTC 失敗？請用課堂架構比較兩家公司。",
+   ["有沒有取捨","關鍵資源在誰手上","決策提前幾年","資源配置看真正策略","正向 vs 負向循環"],"「捨・資・早」三件事",
+   ["**取捨**：全聯淨利 2%、不做裝潢停車刷卡，二十年不變；HTC 旗艦與機海並行，錢分散在配息分紅與周邊投資。","**關鍵資源**：全聯自建物流、生鮮中心、採購量；HTC 的面板、記憶體在三星手上，處理器在高通，OS 在 Google。","**時機**：全聯生鮮提早布局、持續投入；HTC 2013 才全押新 One，已不是供應商一線客戶。","循環：全聯規模 → 採購便宜 → 更低價（正向）；HTC 出貨降 → 零件拿不到 → 上市延後（負向）。"]],
+  ["四、整合比較題",15,"用 SWOT 分析全聯 2015 年（七百家店之後）的處境，並提出 SO、WO、ST、WT 策略。",
+   ["740 家店","品牌不體面","松青待售","美廉社","經濟美學","mini 輕超市"],"「S 規模、W 形象、O 松青、T 美廉社」",
+   ["S：740 家、市占約 21%、生鮮物流已成熟、資金充足。W：品牌「便宜但不體面」、雙北據點不足。","O：超市成長高於量販、松青待售、年輕人重新定義省錢。T：美廉社追趕、便利商店搶都會客、反壟斷審查。","SO：以資金收購松青補都會據點。WO：用「經濟美學」把省錢重新定義為品味。","ST：mini 輕超市抵禦便利商店與美廉社。WT：不減促銷、堅守低價，用新店型提高單店業績。"]],
+];
+
 
 const $ = (s, el=document) => el.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -497,6 +577,7 @@ const VIEWS = [
   {id:"pxtree", n:"5", t:"全聯決策樹"},
   {id:"htctree", n:"6", t:"HTC 決策樹"},
   {id:"tips", n:"7", t:"備考叮嚀與補充"},
+  {id:"sprint", n:"8", t:"考前衝刺問答"},
 ];
 
 // ---- countdown ----
@@ -717,8 +798,37 @@ function viewTips(){
   <footer>${md(S(79).text)}</footer>`;
 }
 
+
+// ---- 8. 考前衝刺 ----
+let spState = {i:0, stage:0, only:false, order:null};
+function spOrder(){ if (!spState.order) spState.order = SPRINT.map((_,i)=>i); return spState.order; }
+function viewSprint(){
+  const rate = store.get("sprintRate", {});
+  let ord = spOrder(); if (spState.only) ord = ord.filter(i=>rate[i]!=="ok");
+  const nOk = SPRINT.filter((_,i)=>rate[i]==="ok").length, nRe = SPRINT.filter((_,i)=>rate[i]==="re").length;
+  if (!ord.length) return `<div class="lead"><div class="eyebrow">PART 8</div><h2>考前模擬衝刺問答</h2></div><p class="soft">全部題目都標成「會了」，很棒！取消「只看還不熟的」可以再從頭練一次。</p><label class="toggle"><input type="checkbox" id="sponly" checked> 只看還不熟的</label>`;
+  if (spState.i >= ord.length) spState.i = 0;
+  const idx = ord[spState.i], q = SPRINT[idx], st = spState.stage;
+  return `<div class="lead"><div class="eyebrow">PART 8</div><h2>考前模擬衝刺問答</h2><p>照老師的考法出的 ${SPRINT.length} 題模擬題。每題分三段：<mark>先看題目自己想</mark> → 想不出來再看<mark>提示關鍵字與口訣</mark>（順便練關鍵字記憶）→ 最後對照<mark>推測合理答案</mark>。答完自己評分，「再複習」的題目可以單獨重練；評分只存在你這台裝置。</p></div>
+  <div class="sptools"><div class="spprog"><b>${spState.i+1}</b> / ${ord.length}<span>會了 ${nOk}｜再複習 ${nRe}</span></div>
+    <label class="toggle"><input type="checkbox" id="sponly" ${spState.only?"checked":""}> 只看還不熟的</label>
+    <button class="spbtn ghost" data-sp="shuffle">隨機抽題</button><button class="spbtn ghost" data-sp="reset">恢復順序</button></div>
+  <div class="spdots">${ord.map((k,j)=>`<button class="spdot ${rate[k]||""} ${j===spState.i?"cur":""}" data-spgo="${j}" aria-label="第 ${k+1} 題">${k+1}</button>`).join("")}</div>
+  <article class="spcard">
+    <div class="sphead"><span class="sppart">${esc(q[0])}</span><span class="sppts">${q[1]} 分｜第 ${idx+1} 題</span></div>
+    <p class="spq">${md(q[2])}</p>
+    <div class="spstage ${st>=1?"open":""}"><div class="splab">提示｜關鍵字</div>
+      ${st>=1?`<div class="chips">${q[3].map(k=>`<span>${esc(k)}</span>`).join("")}</div><p class="mnemo"><b>記憶口訣</b>${md(q[4])}</p>`:`<button class="spbtn" data-sp="hint">看提示</button>`}</div>
+    <div class="spstage ${st>=2?"open":""}"><div class="splab">推測合理答案</div>
+      ${st>=2?ul(q[5]):`<button class="spbtn" data-sp="ans">看參考答案</button>`}</div>
+    ${st>=2?`<div class="sprate"><span>這題你答得出來嗎？</span><button class="spbtn ok ${rate[idx]==="ok"?"on":""}" data-sprate="ok">會了</button><button class="spbtn re ${rate[idx]==="re"?"on":""}" data-sprate="re">再複習</button></div>`:""}
+  </article>
+  <div class="spnav"><button class="spbtn ghost" data-sp="prev">← 上一題</button><button class="spbtn" data-sp="next">下一題 →</button></div>
+  <p class="small muted">答案是依講義、個案與老師錄音推測的合理寫法，不是老師公布的標準答案。作答時記得：條列、講重點、寫到效益。</p>`;
+}
+
 // ---- router ----
-const RENDER = {cases:viewCases, terms:viewTerms, vpc:viewVpc, forces:viewForces, swot:viewSwot, pxtree:()=>viewTree("pxtree"), htctree:()=>viewTree("htctree"), tips:viewTips};
+const RENDER = {cases:viewCases, terms:viewTerms, vpc:viewVpc, forces:viewForces, swot:viewSwot, pxtree:()=>viewTree("pxtree"), htctree:()=>viewTree("htctree"), tips:viewTips, sprint:viewSprint};
 let current = VIEWS.some(v=>v.id===location.hash.slice(1)) ? location.hash.slice(1) : store.get("view","cases");
 if (!RENDER[current]) current = "cases";
 function renderTabs(){ $("#tabs").innerHTML = VIEWS.map(v=>`<button role="tab" aria-selected="${v.id===current}" data-tab="${v.id}"><span class="n">${v.n}</span>${v.t}</button>`).join(""); }
@@ -727,6 +837,17 @@ function go(id){ current = id; store.set("view", id); try{history.replaceState(n
 renderTabs(); render();
 
 document.addEventListener("click", e=>{
+  const sp = e.target.closest("[data-sp],[data-spgo],[data-sprate]");
+  if (sp){ const a = sp.dataset.sp; const n = SPRINT.length;
+    if (sp.dataset.spgo){ spState.i = +sp.dataset.spgo; spState.stage = 0; }
+    else if (sp.dataset.sprate){ const r = store.get("sprintRate",{}); const ord = spOrder().filter(i=>!spState.only||r[i]!=="ok"); const idx = ord[spState.i]; r[idx] = r[idx]===sp.dataset.sprate ? undefined : sp.dataset.sprate; store.set("sprintRate", r); }
+    else if (a==="hint") spState.stage = Math.max(spState.stage,1);
+    else if (a==="ans") spState.stage = 2;
+    else if (a==="next"){ spState.i++; spState.stage = 0; }
+    else if (a==="prev"){ spState.i = Math.max(0, spState.i-1); spState.stage = 0; }
+    else if (a==="shuffle"){ const o = SPRINT.map((_,i)=>i); for (let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]]} spState.order = o; spState.i = 0; spState.stage = 0; }
+    else if (a==="reset"){ spState.order = null; spState.i = 0; spState.stage = 0; }
+    return render(true); }
   const t = e.target.closest("[data-tab],[data-go],[data-seg] button,[data-known],[data-force],[data-opt],[data-rv],[data-expand],.term");
   if (!t) return;
   if (t.dataset.tab) return go(t.dataset.tab);
@@ -758,6 +879,7 @@ document.addEventListener("input", e=>{
   if (e.target.id==="tsearch"){ termState.q = e.target.value.trim(); const pos = e.target.selectionStart; render(true); const s = $("#tsearch"); s.focus(); try{s.setSelectionRange(pos,pos)}catch(_){} }
 });
 document.addEventListener("change", e=>{
+  if (e.target.id==="sponly"){ spState.only = e.target.checked; spState.i = 0; spState.stage = 0; return render(true); }
   if (e.target.id==="tquiz"){ termState.quiz = e.target.checked; render(true); }
   if (e.target.dataset.tquiz){ const st = treeState[e.target.dataset.tquiz]; st.quiz = e.target.checked; st.rv = {}; st.picked = {}; st.open = {}; render(true); }
 });
